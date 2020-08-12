@@ -17,11 +17,18 @@ world = world(gravity=(0, 0), doSleep=True)
 # And a static body to hold the ground shape
 # bottom floor
 
-ground_body = world.CreateStaticBody(
-	position=(0, -1),
-	shapes=polygonShape(box=(100, 1)),
-)
+ground_body = world.CreateStaticBody(position=(0, -1),shapes=polygonShape(box=(100, 1)))
 
+left_wall = world.CreateStaticBody(position = (-1,0), shapes = polygonShape(box= (1,200)))
+
+
+ceiling = world.CreateStaticBody(position = (0,31), shapes = polygonShape(box= (100,1)))
+
+right_wall = world.CreateStaticBody(position = (41,0), shapes = polygonShape(box= (1,200)))
+
+
+
+block = world.CreateStaticBody(position = (10,10), shapes = polygonShape(box= (10,10)))
 
 # Create a dynamic body
 dynamic_body = world.CreateDynamicBody(position=(10, 15))
@@ -30,8 +37,8 @@ dynamic_body.angularDamping = 0.1
 box = dynamic_body.CreatePolygonFixture(box=(2, 1), density=1, friction=0.3)
 
 colors = {
-	staticBody: (127, 127, 127, 255),
-	dynamicBody: (255,165,0, 255),
+	staticBody: (0, 0, 0, 255),
+	dynamicBody: (255, 165, 0, 255),
 }
 
 def get_lateral_velocity():
@@ -45,6 +52,8 @@ def get_foward_velocity():
 	velocity = dynamic_body.linearVelocity
 	projection = (np.dot(velocity, lateral_normal)/ (np.linalg.norm(lateral_normal)**2) )*lateral_normal
 	return projection
+
+
 # --- main game loop ---
 running = True
 
@@ -53,12 +62,22 @@ angular_acceletarion = Box2D.b2_pi/2
 while running:
 
 	# Apply lateral impulse to counter lateral and angular velocities
-	imp = dynamic_body.mass * - get_lateral_velocity()
+	# Asphalt version
+	#imp = dynamic_body.mass * - get_lateral_velocity()
+	
+	# Ice version
+	imp = dynamic_body.mass * - get_lateral_velocity()* 0.1
 	dynamic_body.ApplyLinearImpulse(impulse = imp, point=dynamic_body.worldCenter, wake = True)
 	dynamic_body.ApplyAngularImpulse(impulse = 0.001*dynamic_body.inertia * - dynamic_body.angularVelocity, wake = True)
 
 	# Apply drag
-	imp = dynamic_body.mass * - get_foward_velocity() * 0.01
+	# Asphalt version
+	#imp = dynamic_body.mass * - get_foward_velocity() * 0.01
+	
+	# Ice version
+	imp = dynamic_body.mass * - get_foward_velocity() * 0.00001
+
+
 	dynamic_body.ApplyLinearImpulse(impulse = imp, point=dynamic_body.worldCenter, wake = True)
 
 	# Check the event queue
@@ -73,7 +92,7 @@ while running:
 
 		if event.type == KEYDOWN and event.key == K_DOWN:
 
-			dynamic_body.ApplyForce(force=-1500*dynamic_body.GetWorldVector((1,0)), point=dynamic_body.worldCenter, wake=True)
+			dynamic_body.ApplyForce(force= -1000*dynamic_body.GetWorldVector((1,0)), point=dynamic_body.worldCenter, wake=True)
 			
 		if event.type == KEYDOWN and event.key == K_LEFT:
 
@@ -84,10 +103,13 @@ while running:
 			dynamic_body.ApplyTorque(-200, wake = True)
 			
 			
+	# Grey 
+	#screen.fill((127, 127, 127, 0))
+	# Blue
+	screen.fill((153, 204, 255, 0))
 
-	screen.fill((127, 127, 127, 0))
 	# Draw the world
-	for body in (ground_body, dynamic_body):  # or: world.bodies
+	for body in world.bodies:  # or: world.bodies
 		# The body gives us the position and angle of its shapes
 		for fixture in body.fixtures:
 			# The fixture holds information like density and friction,
