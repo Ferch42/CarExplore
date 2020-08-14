@@ -9,6 +9,7 @@ class Terrain(ABC):
 
 	_ACCELERATION = 1000
 	_TORQUE = 200
+	COLOR = (255,255,255,255) # White
 	
 	@abstractmethod
 	def apply_ordinary_forces(car):

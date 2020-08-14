@@ -5,6 +5,8 @@ from utils import *
 
 class AsphaltTerrain(Terrain):
 
+	COLOR = (127,127,127,0) # Gray
+
 	def apply_ordinary_forces(car):
 
 		lat_imp = AsphaltTerrain.get_impulse(car, Axis.LATERAL) 

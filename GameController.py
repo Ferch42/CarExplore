@@ -3,8 +3,10 @@ from World import World
 from config import *
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT)
 from Box2D.b2 import polygonShape, dynamicBody
-import numpy as np
-from utils import Axis
+import os
+import Area
+from utils import *
+from TerrainFactory import TerrainFactory
 
 class GameController:
 
@@ -21,6 +23,10 @@ class GameController:
 
 			self.__initialize_game_borders()
 			self.__initialize_car()
+
+			self.areas = deserialize_areas()
+			self.default_terrain = 'AsphaltTerrain'
+			self.terrain = TerrainFactory.get_terrain(self.default_terrain)
 
 			GameController.__instance__ = self
 
@@ -70,5 +76,23 @@ class GameController:
 		"""
 		Updates internal state of the game
 		"""
+		
+		# Check terrain of the area
+		
+		for a in self.areas:
+			if a.contains_point(self.car.worldCenter):
+				self.terrain = a.terrain
 
+		self.terrain.apply_ordinary_forces(self.car)
 
+	def handle_event(self, event):
+		"""
+		Handles input commands
+		"""
+		self.terrain.handle_impulse_event(self.car, event)
+
+	def get_default_terrain_color(self):
+		"""
+		Returns the default terrain colour
+		"""
+		return TerrainFactory.get_terrain(self.default_terrain).COLOR
