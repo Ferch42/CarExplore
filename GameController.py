@@ -98,7 +98,7 @@ class GameController:
 		"""
 		return TerrainFactory.get_terrain(self.default_terrain).COLOR
 
-	def get_areas(self):
+	def get_terrains(self):
 		"""
 		Returns the areas of different terrains and their colors for the UI to render (the returned value is specially adapted for the pygame engine)
 		The returned value is a list of tuples of the type [(colour, [rect_information])]
@@ -118,7 +118,7 @@ class GameController:
 
 		return render_areas
 
-	def get_objects(self):
+	def get_bodies(self):
 		"""
 		Returns the objects and their coordinates
 		"""
