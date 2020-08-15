@@ -19,7 +19,8 @@ class GameController:
 			self.PPM = PPM
 			self.SCREEN_WIDTH = SCREEN_WIDTH
 			self.SCREEN_HEIGHT = SCREEN_HEIGHT
-			self.world = World.get_instance()
+			self.TIME_STEP = TIME_STEP
+ 			self.world = World.get_instance()
 
 			self.__initialize_game_borders()
 			self.__initialize_car()
@@ -96,3 +97,45 @@ class GameController:
 		Returns the default terrain colour
 		"""
 		return TerrainFactory.get_terrain(self.default_terrain).COLOR
+
+	def get_areas(self):
+		"""
+		Returns the areas of different terrains and their colors for the UI to render (the returned value is specially adapted for the pygame engine)
+		The returned value is a list of tuples of the type [(colour, [rect_information])]
+		"""
+
+		render_areas = []
+
+		for a in self.areas:
+
+			a_color = a.COLOR
+			lower_x = a.lower_x
+			lower_y = self.SCREEN_HEIGHT - a.lower_y
+			rect_width = a.upper_x - a.lower_x
+			rect_height = a.upper_y - a.lower_y
+
+			render_areas.append((a_color, [lower_x, lower_y, rect_width,rect_height]))
+
+		return render_areas
+
+	def get_objects(self):
+		"""
+		Returns the objects and their coordinates
+		"""
+		fixtures = []
+
+		for body in world.bodies:
+
+			for fixture in body.fixtures:
+				
+				shape = fixture.shape
+				vertices = [(body.transform * v) * self.PPM for v in shape.vertices]
+				vertices = [(v[0], self.SCREEN_HEIGHT - v[1]) for v in vertices]
+				
+				fixtures.append((Body(body.type), vertices))
+
+		return fixtures
+
+	def step(self):
+
+		self.world.Step(self.TIME_STEP, 10, 10)

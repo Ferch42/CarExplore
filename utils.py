@@ -1,12 +1,16 @@
 # File for storing utils
 from enum import Enum
-
-# Classes
+from Box2D.b2 import staticBody, dynamicBody
+# Enum Classes
 class Axis(Enum):
 
 	LATERAL = (0,1)
 	VERTICAL = (1,0)
 
+class Body(Enum):
+
+	DYNAMIC = dynamicBody
+	STATIC = staticBody
 
 # Functions 
 def get_velocity(car, axis: Axis):
