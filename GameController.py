@@ -3,7 +3,7 @@ from World import World
 from config import *
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT)
 from Box2D.b2 import polygonShape, dynamicBody
-from car_explore_utils import deserialize_areas
+from car_explore_utils import deserialize_areas, deserialize_obstacles
 from TerrainFactory import TerrainFactory
 from Body import Body
 
@@ -27,6 +27,8 @@ class GameController:
 			self.areas = deserialize_areas()
 			self.default_terrain = 'AsphaltTerrain'
 			self.terrain = TerrainFactory.get_terrain(self.default_terrain)
+
+			self.__build_obstacles()
 
 			GameController.__instance__ = self
 
@@ -139,3 +141,13 @@ class GameController:
 	def step(self):
 
 		self.world.Step(self.TIME_STEP, 10, 10)
+
+	def __build_obstacles(self):
+		"""
+		Builds the obstacles for the game
+		"""
+
+		obstacles = deserialize_obstacles()
+		
+		for o_vertices in obstacles:
+			self.world.CreateStaticBody(shapes=polygonShape(vertices=o_vertices))

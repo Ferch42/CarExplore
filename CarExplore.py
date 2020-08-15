@@ -29,5 +29,5 @@ while running:
 	interface.render()
 	game_controller.step()
 
-game_controller.quit()
+interface.quit()
 print('Done!')

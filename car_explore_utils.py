@@ -21,3 +21,19 @@ def deserialize_areas():
 
 
 	return areas_list
+
+def deserialize_obstacles():
+	"""
+	Deserializes and obstacles
+	"""
+	obstacles_list = []
+
+	obstacles = os.listdir('./obstacles/')
+		
+	for o in obstacles:
+		print(o)
+		obstacle_json = open('./obstacles/'+ o).read()
+		obstacle_dict = eval(obstacle_json)
+		obstacles_list.append(obstacle_dict['vertices'])
+
+	return obstacles_list
