@@ -1,9 +1,10 @@
 # Class Terrain for applying forces in the car
 
-from abc impor ABC, abstractmethod
+from abc import ABC, abstractmethod
 from pygame.event import Event
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT)
-from utils import *
+from Axis import Axis
+import numpy as np
 
 class Terrain(ABC):
 
@@ -19,12 +20,12 @@ class Terrain(ABC):
 		
 		# Acceleration
 		if event.type == KEYDOWN and event.key == K_UP:
-			car.ApplyForce(force= Terrain._ACCELERATION*car.GetWorldVector(Axis.VERTIVAL.value), point=car.worldCenter , wake=True)
+			car.ApplyForce(force= Terrain._ACCELERATION*car.GetWorldVector(Axis.VERTICAL.value), point=car.worldCenter , wake=True)
 
 		# Brake
 		if event.type == KEYDOWN and event.key == K_DOWN:
 
-			car.ApplyForce(force= -Terrain._ACCELERATION*car.GetWorldVector(Axis.VERTIVAL.value), point=car.worldCenter, wake=True)
+			car.ApplyForce(force= -Terrain._ACCELERATION*car.GetWorldVector(Axis.VERTICAL.value), point=car.worldCenter, wake=True)
 		
 		# Turn left
 		if event.type == KEYDOWN and event.key == K_LEFT:
@@ -38,5 +39,15 @@ class Terrain(ABC):
 
 	def get_impulse(car, axis: Axis):
 
-		return car.mass * get_velocity(car, axis)
+		return car.mass * - Terrain.get_velocity(car, axis)
 
+	def get_velocity(car, axis: Axis):
+		"""
+		Returns the projection of the car's velocity w.r.t some of his axis: either LATERAL or VERTICAL 
+		"""
+
+		normal = car.GetWorldVector(axis.value)
+		velocity = car.linearVelocity
+		projection = (np.dot(velocity, normal)/ (np.linalg.norm(normal)**2) )*normal
+			
+		return projection

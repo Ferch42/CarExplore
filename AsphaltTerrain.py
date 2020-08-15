@@ -1,7 +1,7 @@
 # Asphalt Terrain
 
 from Terrain import Terrain
-from utils import *
+from Axis import Axis
 
 class AsphaltTerrain(Terrain):
 

@@ -3,7 +3,7 @@
 from config import *
 import pygame
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT)
-from utils import *
+from Body import Body
 from GameController import GameController
 
 class Interface:

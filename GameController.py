@@ -3,10 +3,9 @@ from World import World
 from config import *
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT)
 from Box2D.b2 import polygonShape, dynamicBody
-import os
-import Area
-from utils import *
+from car_explore_utils import deserialize_areas
 from TerrainFactory import TerrainFactory
+from Body import Body
 
 class GameController:
 
@@ -20,7 +19,7 @@ class GameController:
 			self.SCREEN_WIDTH = SCREEN_WIDTH
 			self.SCREEN_HEIGHT = SCREEN_HEIGHT
 			self.TIME_STEP = TIME_STEP
- 			self.world = World.get_instance()
+			self.world = World.get_instance()
 
 			self.__initialize_game_borders()
 			self.__initialize_car()
@@ -80,6 +79,7 @@ class GameController:
 		
 		# Check terrain of the area
 		
+		self.terrain = TerrainFactory.get_terrain(self.default_terrain)
 		for a in self.areas:
 			if a.contains_point(self.car.worldCenter):
 				self.terrain = a.terrain
@@ -108,11 +108,11 @@ class GameController:
 
 		for a in self.areas:
 
-			a_color = a.COLOR
-			lower_x = a.lower_x
-			lower_y = self.SCREEN_HEIGHT - a.lower_y
-			rect_width = a.upper_x - a.lower_x
-			rect_height = a.upper_y - a.lower_y
+			a_color = a.terrain.COLOR
+			rect_width = (a.upper_x - a.lower_x)*self.PPM
+			rect_height = (a.upper_y - a.lower_y)*self.PPM
+			lower_x = a.lower_x*self.PPM
+			lower_y = self.SCREEN_HEIGHT - a.lower_y*self.PPM - rect_height
 
 			render_areas.append((a_color, [lower_x, lower_y, rect_width,rect_height]))
 
@@ -124,7 +124,7 @@ class GameController:
 		"""
 		fixtures = []
 
-		for body in world.bodies:
+		for body in self.world.bodies:
 
 			for fixture in body.fixtures:
 				
