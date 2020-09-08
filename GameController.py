@@ -6,6 +6,7 @@ from Box2D.b2 import polygonShape, dynamicBody
 from car_explore_utils import deserialize_areas, deserialize_obstacles
 from TerrainFactory import TerrainFactory
 from Body import Body
+from EventFactory import EventFactory
 
 class GameController:
 
@@ -92,7 +93,7 @@ class GameController:
 		"""
 		Handles input commands
 		"""
-		self.terrain.handle_impulse_event(self.car, event)
+		self.terrain.handle_impulse_event(self.car, EventFactory.create(event))
 
 	def get_default_terrain_color(self):
 		"""

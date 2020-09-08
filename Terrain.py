@@ -1,10 +1,10 @@
 # Class Terrain for applying forces in the car
 
 from abc import ABC, abstractmethod
-from pygame.event import Event
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT)
 from Axis import Axis
 import numpy as np
+from CarEvent import CarEvent
 
 class Terrain(ABC):
 
@@ -16,25 +16,22 @@ class Terrain(ABC):
 	def apply_ordinary_forces(car):
 		pass
 
-	def handle_impulse_event(car, event: Event):
+	def handle_impulse_event(car, event: CarEvent):
 		
 		# Acceleration
-		if event.type == KEYDOWN and event.key == K_UP:
+		if event == CarEvent.ACCELERATE:
 			car.ApplyForce(force= Terrain._ACCELERATION*car.GetWorldVector(Axis.VERTICAL.value), point=car.worldCenter , wake=True)
 
 		# Brake
-		if event.type == KEYDOWN and event.key == K_DOWN:
-
+		if event == CarEvent.BRAKE:
 			car.ApplyForce(force= -Terrain._ACCELERATION*car.GetWorldVector(Axis.VERTICAL.value), point=car.worldCenter, wake=True)
 		
 		# Turn left
-		if event.type == KEYDOWN and event.key == K_LEFT:
-
+		if event == CarEvent.TURN_LEFT:
 			car.ApplyTorque(Terrain._TORQUE, wake = True)
 
 		# Turn right
-		if event.type == KEYDOWN and event.key == K_RIGHT:
-
+		if event == CarEvent.TURN_RIGHT:
 			car.ApplyTorque(-Terrain._TORQUE, wake = True)
 
 	def get_impulse(car, axis: Axis):
