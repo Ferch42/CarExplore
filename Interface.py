@@ -6,7 +6,7 @@ from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGH
 from Body import Body
 from GameController import GameController
 
-class Interface(Singleton):
+class Interface(metaclass = Singleton):
 
 
 	def __init__(self):

@@ -9,7 +9,7 @@ from TerrainFactory import TerrainFactory
 from Body import Body
 from EventFactory import EventFactory
 
-class GameController(Singleton):
+class GameController(metaclass= Singleton):
 
 
 	def __init__(self):
@@ -18,7 +18,7 @@ class GameController(Singleton):
 		self.SCREEN_WIDTH = SCREEN_WIDTH
 		self.SCREEN_HEIGHT = SCREEN_HEIGHT
 		self.TIME_STEP = TIME_STEP
-		self.world = World()
+		self.world = World().get_world()
 
 		self.__initialize_game_borders()
 		self.__initialize_car()
