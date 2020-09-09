@@ -11,8 +11,8 @@ class Interface(metaclass = Singleton):
 
 	def __init__(self):
 
-		# Controller
-		self.controller = GameController()
+		# The Controller needs to be set by the ApplicationFactory
+		self.controller = None
 		# Pygame setup
 		self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 		pygame.display.set_caption('CarExplore')
@@ -24,25 +24,31 @@ class Interface(metaclass = Singleton):
 		Body.DYNAMIC: (255, 165, 0, 255)}
 
 
+	def set_controller(self, controller):
+		"""
+		Setter for the controller
+		"""
+		self.controller = controller
+
 	def render(self):
 		"""
 		Renders all the information about the game
 		"""
-		self.__render_background()
-		self.__render_terrains()
-		self.__render_bodies()
+		self._render_background()
+		self._render_terrains()
+		self._render_bodies()
 		
 		pygame.display.flip()
-		self.clock.tick(TARGET_FPS)
+		self.clock.tick(self.TARGET_FPS)
 	
 
-	def __render_background(self):
+	def _render_background(self):
 		"""
 		Renders the background terrain
 		"""
 		self.screen.fill(self.controller.get_default_terrain_color())
 
-	def __render_terrains(self):
+	def _render_terrains(self):
 		"""
 		Renders the custom terrains
 		"""
@@ -54,7 +60,7 @@ class Interface(metaclass = Singleton):
 			t_color, rect_dim = t
 			pygame.draw.rect(self.screen,t_color, rect_dim)
 
-	def __render_bodies(self):
+	def _render_bodies(self):
 		"""
 		Renders the custom terrains
 		"""

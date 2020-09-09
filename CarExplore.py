@@ -1,12 +1,12 @@
 # CarExplore application
 
-from controllers.GameController import GameController
-from views.Interface import Interface
+from ApplicationFactory import ApplicationFactory
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT)
 import pygame
 
-game_controller = GameController()
-interface = Interface()
+app_name = "GOAL_APP"
+
+game_controller, interface = ApplicationFactory.create(app_name)
 
 
 # --- main game loop ---
