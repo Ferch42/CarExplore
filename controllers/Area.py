@@ -1,5 +1,5 @@
 # Area class for plotting different terrains into the environment
-from TerrainFactory import TerrainFactory
+from terrains.TerrainFactory import TerrainFactory
 
 class Area:
 

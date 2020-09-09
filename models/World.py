@@ -1,8 +1,8 @@
 # Singleton model for containing the Box2d world
-from Singleton import Singleton
+from utils.Singleton import Singleton
 from Box2D.b2 import world
 
-class World:
+class World(metaclass = Singleton):
 	
 	def __init__(self):
 

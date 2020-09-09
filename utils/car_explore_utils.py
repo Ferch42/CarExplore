@@ -1,6 +1,6 @@
 # File for storing utils
-from Area import Area
-from Axis import Axis
+from controllers.Area import Area
+from enums.Axis import Axis
 import os
 
 # Functions 

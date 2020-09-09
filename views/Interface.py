@@ -1,10 +1,10 @@
 # Class resposible for dealing with rendering
-from Singleton import Singleton
+from utils.Singleton import Singleton
 from config import *
 import pygame
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT)
-from Body import Body
-from GameController import GameController
+from enums.Body import Body
+from controllers.GameController import GameController
 
 class Interface(metaclass = Singleton):
 

@@ -2,9 +2,9 @@
 
 from abc import ABC, abstractmethod
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT)
-from Axis import Axis
+from enums.Axis import Axis
 import numpy as np
-from CarEvent import CarEvent
+from events.CarEvent import CarEvent
 
 class Terrain(ABC):
 

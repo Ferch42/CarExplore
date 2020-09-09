@@ -1,7 +1,7 @@
 # Ice Terrain
 
-from Terrain import Terrain
-from Axis import Axis
+from terrains.Terrain import Terrain
+from enums.Axis import Axis
 
 class IceTerrain(Terrain):
 

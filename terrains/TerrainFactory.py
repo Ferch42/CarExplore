@@ -1,6 +1,6 @@
 # Class Factory for retrieving Terrain Objects
-from IceTerrain import IceTerrain
-from AsphaltTerrain import AsphaltTerrain
+from terrains.IceTerrain import IceTerrain
+from terrains.AsphaltTerrain import AsphaltTerrain
 
 class TerrainFactory:
 

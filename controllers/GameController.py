@@ -1,13 +1,13 @@
 # Game Controller module for applying game logic to the physics engine
-from Singleton import Singleton
-from World import World
+from utils.Singleton import Singleton
+from models.World import World
 from config import *
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT)
 from Box2D.b2 import polygonShape, dynamicBody
-from car_explore_utils import deserialize_areas, deserialize_obstacles
-from TerrainFactory import TerrainFactory
-from Body import Body
-from EventFactory import EventFactory
+from utils.car_explore_utils import deserialize_areas, deserialize_obstacles
+from terrains.TerrainFactory import TerrainFactory
+from enums.Body import Body
+from events.EventFactory import EventFactory
 
 class GameController(metaclass= Singleton):
 

@@ -1,7 +1,7 @@
 # CarExplore application
 
-from GameController import GameController
-from Interface import Interface
+from controllers.GameController import GameController
+from views.Interface import Interface
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT)
 import pygame
 
