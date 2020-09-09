@@ -1,4 +1,5 @@
 # Game Controller module for applying game logic to the physics engine
+from Singleton import Singleton
 from World import World
 from config import *
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT)
@@ -8,41 +9,27 @@ from TerrainFactory import TerrainFactory
 from Body import Body
 from EventFactory import EventFactory
 
-class GameController:
+class GameController(Singleton):
 
-	__instance__ = None
 
 	def __init__(self):
-
-		if not GameController.__instance__:
 			
-			self.PPM = PPM
-			self.SCREEN_WIDTH = SCREEN_WIDTH
-			self.SCREEN_HEIGHT = SCREEN_HEIGHT
-			self.TIME_STEP = TIME_STEP
-			self.world = World.get_instance()
+		self.PPM = PPM
+		self.SCREEN_WIDTH = SCREEN_WIDTH
+		self.SCREEN_HEIGHT = SCREEN_HEIGHT
+		self.TIME_STEP = TIME_STEP
+		self.world = World()
 
-			self.__initialize_game_borders()
-			self.__initialize_car()
+		self.__initialize_game_borders()
+		self.__initialize_car()
 
-			self.areas = deserialize_areas()
-			self.default_terrain = 'AsphaltTerrain'
-			self.terrain = TerrainFactory.get_terrain(self.default_terrain)
+		self.areas = deserialize_areas()
+		self.default_terrain = 'AsphaltTerrain'
+		self.terrain = TerrainFactory.get_terrain(self.default_terrain)
 
-			self.__build_obstacles()
+		self.__build_obstacles()
 
-			GameController.__instance__ = self
 
-		else: 
-			raise Exception("Game Controller already instanciated")
-
-	def get_instance():
-
-		if not GameController.__instance__:
-
-			GameController.__instance__ = GameController()
-
-		return GameController.__instance__
 
 	def __initialize_game_borders(self):
 		"""

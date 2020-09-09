@@ -5,8 +5,8 @@ from Interface import Interface
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT)
 import pygame
 
-game_controller = GameController.get_instance()
-interface = Interface.get_instance()
+game_controller = GameController()
+interface = Interface()
 
 
 # --- main game loop ---

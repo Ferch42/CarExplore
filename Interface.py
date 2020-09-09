@@ -1,41 +1,27 @@
 # Class resposible for dealing with rendering
-
+from Singleton import Singleton
 from config import *
 import pygame
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT)
 from Body import Body
 from GameController import GameController
 
-class Interface:
+class Interface(Singleton):
 
-	__instance__ = None
 
 	def __init__(self):
 
-		if not Interface.__instance__:
-			
-			# Controller
-			self.controller = GameController.get_instance()
-			# Pygame setup
-			self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-			pygame.display.set_caption('CarExplore')
-			self.clock = pygame.time.Clock()
-			self.TARGET_FPS = TARGET_FPS
-			# body colours
-			self.colors = {
-			Body.STATIC: (0, 0, 0, 255),
-			Body.DYNAMIC: (255, 165, 0, 255)}
-
-		else:
-			raise Exception("Interface already instanciated")
-
-	def get_instance():
-
-		if not Interface.__instance__:
-
-			Interface.__instance__ = Interface()
-
-		return Interface.__instance__
+		# Controller
+		self.controller = GameController()
+		# Pygame setup
+		self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+		pygame.display.set_caption('CarExplore')
+		self.clock = pygame.time.Clock()
+		self.TARGET_FPS = TARGET_FPS
+		# body colours
+		self.colors = {
+		Body.STATIC: (0, 0, 0, 255),
+		Body.DYNAMIC: (255, 165, 0, 255)}
 
 
 	def render(self):

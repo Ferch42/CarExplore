@@ -1,13 +1,10 @@
 # Singleton model for containing the Box2d world
+
+from Singleton import Singleton
 from Box2D.b2 import world
 
-class World:
+class World(Singleton):
 	
-	__instance__ = None
+	def __init__(self):
 
-	def get_instance():
-
-		if not World.__instance__:
-			World.__instance__ = world(gravity=(0, 0), doSleep=True)
-
-		return World.__instance__
+		self = world(gravity=(0, 0), doSleep=True)
