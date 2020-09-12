@@ -2,8 +2,10 @@
 
 from controllers.GameController import GameController
 from controllers.GoalController import GoalController
+from controllers.SweepController import SweepController
 from views.Interface import Interface
 from views.GoalInterface import GoalInterface
+from views.SweepInterface import SweepInterface
 
 class ApplicationFactory:
 
@@ -22,6 +24,10 @@ class ApplicationFactory:
 			controller = GoalController()
 			interface = GoalInterface()
 		
+		elif app == 'SWEEP_APP':
+
+			controller = SweepController()
+			interface = SweepInterface()
 		else:
 			raise NameException("Not a valid App")
 

@@ -4,7 +4,7 @@ from ApplicationFactory import ApplicationFactory
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT)
 import pygame
 
-app_name = "GOAL_APP"
+app_name = "SWEEP_APP"
 
 game_controller, interface = ApplicationFactory.create(app_name)
 

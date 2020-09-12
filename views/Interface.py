@@ -55,9 +55,10 @@ class Interface(metaclass = Singleton):
 		
 		terrains = self.controller.get_terrains()
 
-		for t in terrains:
+		for terrain in terrains:
 
-			t_color, rect_dim = t
+			t_color = terrain['COLOR']
+			rect_dim = terrain['RECT']
 			pygame.draw.rect(self.screen,t_color, rect_dim)
 
 	def _render_bodies(self):
@@ -69,7 +70,8 @@ class Interface(metaclass = Singleton):
 
 		for b in bodies:
 
-			body_type, vertices = b
+			body_type = b["BODY"]
+			vertices = b["VERTICES"]
 			pygame.draw.polygon(self.screen, self.colors[body_type], vertices)
 
 	def quit(self):

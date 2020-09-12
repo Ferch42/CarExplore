@@ -17,6 +17,8 @@ class GameController(metaclass= Singleton):
 		self.PPM = PPM
 		self.SCREEN_WIDTH = SCREEN_WIDTH
 		self.SCREEN_HEIGHT = SCREEN_HEIGHT
+		self.WORLD_WIDTH = self.SCREEN_WIDTH/self.PPM
+		self.WORLD_HEIGHT = self.SCREEN_HEIGHT/self.PPM
 		self.TIME_STEP = TIME_STEP
 		self.world = World().get_world()
 
@@ -36,8 +38,8 @@ class GameController(metaclass= Singleton):
 		Builds borders for cointaning the game environment
 		"""
 
-		horizontal_width = self.SCREEN_WIDTH/self.PPM + 1
-		vertical_height = self.SCREEN_HEIGHT/self.PPM + 1
+		horizontal_width = self.WORLD_WIDTH + 1
+		vertical_height = self.WORLD_HEIGHT + 1
 
 		# Ground 
 		ground = self.world.CreateStaticBody(position= (0, -1),shapes=polygonShape(box=(horizontal_width, 1)))
@@ -104,7 +106,7 @@ class GameController(metaclass= Singleton):
 			lower_x = a.lower_x*self.PPM
 			lower_y = self.SCREEN_HEIGHT - a.lower_y*self.PPM - rect_height
 
-			render_areas.append((a_color, [lower_x, lower_y, rect_width,rect_height]))
+			render_areas.append({"COLOR":a_color, "RECT":[lower_x, lower_y, rect_width,rect_height]})
 
 		return render_areas
 
@@ -122,7 +124,7 @@ class GameController(metaclass= Singleton):
 				vertices = [(body.transform * v) * self.PPM for v in shape.vertices]
 				vertices = [(v[0], self.SCREEN_HEIGHT - v[1]) for v in vertices]
 				
-				fixtures.append((Body(body.type), vertices))
+				fixtures.append({"BODY": Body(body.type), "VERTICES" :vertices})
 
 		return fixtures
 
