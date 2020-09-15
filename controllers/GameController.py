@@ -26,6 +26,7 @@ class GameController(metaclass= Singleton):
 		self.__initialize_car()
 
 		self.areas = deserialize_areas()
+		self.obstacles = deserialize_obstacles()
 		self.default_terrain = 'AsphaltTerrain'
 		self.terrain = TerrainFactory.get_terrain(self.default_terrain)
 
@@ -136,8 +137,5 @@ class GameController(metaclass= Singleton):
 		"""
 		Builds the obstacles for the game
 		"""
-
-		obstacles = deserialize_obstacles()
-		
-		for o_vertices in obstacles:
+		for o_vertices in self.obstacles:
 			self.world.CreateStaticBody(shapes=polygonShape(vertices=o_vertices))

@@ -46,7 +46,4 @@ class SweepInterface(Interface):
 		self._render_grid()
 		self._render_occupancy_squares()
 		super()._render_bodies()
-		
-		
-		pygame.display.flip()
-		self.clock.tick(self.TARGET_FPS)
+		self._flip()

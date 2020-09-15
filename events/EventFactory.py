@@ -8,21 +8,43 @@ class EventFactory:
 
 		if type(event) == EventType:
 
-			# Acceleration	
-			if event.type == KEYDOWN and event.key == K_UP:
-				return CarEvent.ACCELERATE 
-
-			# Brake
-			if event.type == KEYDOWN and event.key == K_DOWN:
-				return CarEvent.BRAKE 
+			if event.type == KEYDOWN:
 				
-			# Turn left
-			if event.type == KEYDOWN and event.key == K_LEFT:
-				return CarEvent.TURN_LEFT 
+				# Acceleration	
+				if event.key == K_UP:
+					return CarEvent.ACCELERATE 
 
-			# Turn right
-			if event.type == KEYDOWN and event.key == K_RIGHT:
-				return CarEvent.TURN_RIGHT 
+				# Brake
+				if event.key == K_DOWN:
+					return CarEvent.BRAKE 
+					
+				# Turn left
+				if event.key == K_LEFT:
+					return CarEvent.TURN_LEFT 
+
+				# Turn right
+				if event.key == K_RIGHT:
+					return CarEvent.TURN_RIGHT 
+			else:
+				return CarEvent.NULL
+
+		if type(event) == int:
+
+			if event == 0:
+				return CarEvent.NULL
+
+			if event == 1:
+				return CarEvent.ACCELERATE
+
+			if event == 2:
+				return CarEvent.BRAKE
+
+			if event == 3:
+				return CarEvent.TURN_LEFT
+
+			if event == 4:
+				return CarEvent.TURN_RIGHT
+
 
 
 

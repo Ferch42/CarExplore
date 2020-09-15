@@ -23,10 +23,7 @@ class GoalInterface(Interface):
 		super()._render_terrains()
 		self._render_GOAL()
 		super()._render_bodies()
-		
-		
-		pygame.display.flip()
-		self.clock.tick(self.TARGET_FPS)
+		self._flip()
 
 	def _render_GOAL(self):
 		"""

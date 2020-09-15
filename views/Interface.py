@@ -37,11 +37,16 @@ class Interface(metaclass = Singleton):
 		self._render_background()
 		self._render_terrains()
 		self._render_bodies()
+		self._flip()
 		
+		
+	def _flip(self):
+		"""
+		Flips in pygame
+		"""
 		pygame.display.flip()
 		self.clock.tick(self.TARGET_FPS)
 	
-
 	def _render_background(self):
 		"""
 		Renders the background terrain

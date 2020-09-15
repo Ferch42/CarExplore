@@ -3,11 +3,13 @@ from terrains.TerrainFactory import TerrainFactory
 
 class Area:
 
-	def __init__(self,lower_bound, upper_bound, terrain):
+	def __init__(self,lower_bound, upper_bound, terrain= None):
 
 		self.lower_x, self.lower_y = lower_bound
 		self.upper_x, self.upper_y = upper_bound
-		self.terrain = TerrainFactory.get_terrain(terrain)
+		
+		if terrain is not None:
+			self.terrain = TerrainFactory.get_terrain(terrain)
 
 	def contains_point(self, point):
 		"""
