@@ -6,14 +6,17 @@ import numpy as np
 
 class GoalController(GameController):
 
-	def __init__(self):
+	def __init__(self, random_start = False):
 
 		super().__init__()
 		self.__GOAL_pos = (30,30)
 		self.__GOAL_found = False
 		self.__GOAL_radius = 1
+		self.__GOAL_diameter = 2*self.__GOAL_radius
 		self._obstacles_areas = self._get_obstacles_areas()
-
+		
+		if random_start:
+			self._reset_GOAL()
 
 	def car_reached_goal(self):
 		"""
@@ -43,7 +46,8 @@ class GoalController(GameController):
 		super().update()
 		if self.car_reached_goal():
 
-			self.__GOAL_found = True
+			#self.__GOAL_found = True
+			self._reset_GOAL()
 
 	def _get_obstacles_areas(self):
 		"""
@@ -80,7 +84,7 @@ class GoalController(GameController):
 
 		x,y = self._choose_random_GOAL_points()
 
-		while(not self._valid_GOAL_point((x,y))):
+		while not self._valid_GOAL_point((x,y)):
 			
 			x,y = self._choose_random_GOAL_points()
 
@@ -90,7 +94,7 @@ class GoalController(GameController):
 
 	def _choose_random_GOAL_points(self):
 
-		x = np.random.randint(self.__GOAL_radius, self.WORLD_WIDTH+1-self.__GOAL_radius)	
-		y = np.random.randint(self.__GOAL_radius, self.WORLD_HEIGHT+1-self.__GOAL_radius)
+		x = np.random.randint(self.__GOAL_diameter, self.WORLD_WIDTH+1-self.__GOAL_diameter)	
+		y = np.random.randint(self.__GOAL_diameter, self.WORLD_HEIGHT+1-self.__GOAL_diameter)
 
 		return x,y
