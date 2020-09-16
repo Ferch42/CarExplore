@@ -9,6 +9,7 @@ app_name = "GOAL_APP"
 
 game_controller, interface = ApplicationFactory.create(app_name)
 
+clock = pygame.time.Clock()
 
 # --- main game loop ---
 running = True
@@ -27,6 +28,7 @@ while running:
 			
 			
 	interface.render()
+	clock.tick(TARGET_FPS)
 	game_controller.step()
 
 interface.quit()

@@ -23,7 +23,7 @@ class GameController(metaclass= Singleton):
 		self.world = World().get_world()
 
 		self.__initialize_game_borders()
-		self.__initialize_car()
+		self._initialize_car()
 
 		self.areas = deserialize_areas()
 		self.obstacles = deserialize_obstacles()
@@ -55,7 +55,7 @@ class GameController(metaclass= Singleton):
 		right_wall = self.world.CreateStaticBody(position = (horizontal_width,0), shapes = polygonShape(box= (1,vertical_height)))
 
 
-	def __initialize_car(self):
+	def _initialize_car(self):
 		"""
 		Initializes the car
 		"""
@@ -71,7 +71,6 @@ class GameController(metaclass= Singleton):
 		"""
 		
 		# Check terrain of the area
-		
 		self.terrain = TerrainFactory.get_terrain(self.default_terrain)
 		for a in self.areas:
 			if a.contains_point(self.car.worldCenter):
@@ -139,3 +138,20 @@ class GameController(metaclass= Singleton):
 		"""
 		for o_vertices in self.obstacles:
 			self.world.CreateStaticBody(shapes=polygonShape(vertices=o_vertices))
+
+	def get_car_state(self):
+		"""
+		Returns the car state, ie, its x and y position, its velocity and torque
+		"""
+		x, y = self.car.worldCenter
+		vel_x, vel_y = self.car.linearVelocity
+		ang_vel = self.car.angularVelocity
+
+		return [x,y,vel_x,vel_y,ang_vel]
+
+	def _reset_car(self):
+		"""
+		Resets car
+		"""
+		self.world.DestroyBody(self.car)
+		self._initialize_car()

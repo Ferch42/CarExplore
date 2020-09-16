@@ -6,7 +6,7 @@ import numpy as np
 
 class GoalController(GameController):
 
-	def __init__(self, random_start = False):
+	def __init__(self, random_GOAL = False):
 
 		super().__init__()
 		self.__GOAL_pos = (30,30)
@@ -14,8 +14,9 @@ class GoalController(GameController):
 		self.__GOAL_radius = 1
 		self.__GOAL_diameter = 2*self.__GOAL_radius
 		self._obstacles_areas = self._get_obstacles_areas()
-		
-		if random_start:
+		self.random_GOAL = random_GOAL
+
+		if random_GOAL:
 			self._reset_GOAL()
 
 	def car_reached_goal(self):
@@ -46,8 +47,30 @@ class GoalController(GameController):
 		super().update()
 		if self.car_reached_goal():
 
-			#self.__GOAL_found = True
+			self.__GOAL_found = True
+			#self._reset_GOAL()
+	
+	def get_GOAL_pos(self):
+		"""
+		GOAL pos getter
+		"""
+		return self.__GOAL_pos
+
+	def get_GOAL_found(self):
+		"""
+		GOAL found getter
+		"""
+		return self.__GOAL_found
+
+	def reset(self):
+		"""
+		Resets environment
+		"""
+		self._reset_car()
+		self.__GOAL_found = False
+		if self.random_GOAL:
 			self._reset_GOAL()
+
 
 	def _get_obstacles_areas(self):
 		"""
@@ -81,7 +104,9 @@ class GoalController(GameController):
 		return flag
 
 	def _reset_GOAL(self):
-
+		"""
+		Resets the GOAL to a new random position
+		"""
 		x,y = self._choose_random_GOAL_points()
 
 		while not self._valid_GOAL_point((x,y)):
@@ -89,7 +114,6 @@ class GoalController(GameController):
 			x,y = self._choose_random_GOAL_points()
 
 		self.__GOAL_pos = (x,y)
-		self.__GOAL_found = False
 
 
 	def _choose_random_GOAL_points(self):
