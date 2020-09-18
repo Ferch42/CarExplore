@@ -9,7 +9,7 @@ class GoalEnvironment(gym.Env):
 
 	metadata = {"render.modes": ['human']}
 
-	def __init__(self, random_GOAL = False, max_timesteps = 1000):
+	def __init__(self, random_GOAL = False, max_timesteps = 200):
 
 		self.controller = GoalController(random_GOAL = random_GOAL)
 		self.interface = GoalInterface()
@@ -20,7 +20,7 @@ class GoalEnvironment(gym.Env):
 		self.reward = -1
 		self.done = False
 		self.max_timesteps = max_timesteps
-		self.timestep = 0
+		self.timestep = 1
 		self.random_GOAL = random_GOAL
 
 	def step(self, action):
@@ -55,7 +55,7 @@ class GoalEnvironment(gym.Env):
 		"""
 		Gets the status to be returned by the environment
 		"""
-		return self._get_observation(), self.reward, self.done , None
+		return self._get_observation(), self.get_reward(), self.done , None
 
 
 	def render(self, mode ='human'):
@@ -65,3 +65,12 @@ class GoalEnvironment(gym.Env):
 	def close(self):
 
 		self.interface.quit()
+
+	def get_reward(self):
+
+		x_car, y_car, _,_,_ = self.controller.get_car_state()
+		GOAL_x, GOAL_y = self.controller.get_GOAL_pos()
+		
+		dist = np.sqrt((x_car-GOAL_x)**2+ (y_car- GOAL_y)**2)
+
+		return -dist

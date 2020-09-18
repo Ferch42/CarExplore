@@ -1,5 +1,6 @@
 from GoalEnvironment import GoalEnvironment
 import numpy as np
+import gym
 import random
 import keras
 from keras.models import Sequential
@@ -9,43 +10,51 @@ from keras.optimizers import Adam
 
 # Hyperparameters
 max_timesteps = 10000
-episodes = 10000
+episodes = 1000000
+random_steps = 50000
 initial_episilon = 1
 episilon = 0.1
-exploration_linear_decay = 0.00001
+update_frequency = 4
+exploration_annealing_frames = 1000000
 gamma = 0.99
 batch_size = 32
-lr = 0.001
+lr = 0.00025
 C = 10000
+clip_norm = 10
 replay_buffer_size = 1000000
+DOUBLE_DQN = True
 
 # Variables
 env = GoalEnvironment()
+#env = gym.make('CartPole-v1')
 replay_buffer = list()
 timestep = 0
+episode_timestep_history = list()
+C = C *update_frequency
+exploration_linear_decay = 1/exploration_annealing_frames
 
 # Model definition and clonning
 Q_net = Sequential()
 Q_net.add(Dense(32, input_shape = env.observation_space.shape, activation = 'relu'))
 Q_net.add(Dense(32, activation = 'relu'))
 Q_net.add(Dense(32, activation = 'relu'))
-Q_net.add(Dense(env.action_space.n))
+Q_net.add(Dense(env.action_space.n, activation= 'linear'))
 print(Q_net.summary())
 
 Q_target_net = keras.models.clone_model(Q_net)
 Q_target_net.set_weights(Q_net.get_weights()) 
 
 # Model compiling 
-Q_net.compile(loss = 'mse', optimizer = Adam(learning_rate = lr))
-Q_target_net.compile(loss = 'mse', optimizer = Adam(learning_rate = lr))
+Q_net.compile(loss = 'mse', optimizer = Adam(learning_rate = lr, clipnorm = clip_norm))
+Q_target_net.compile(loss = 'mse', optimizer = Adam(learning_rate = lr, clipnorm = clip_norm))
 
 # Helper functions
-def get_episilon_greedy_action(state,e= episilon):
-	global Q_net, episilon
+def get_episilon_greedy_action(state,e):
+	global Q_net
 
 	p = np.random.uniform()
 	
-	if p<= episilon:
+	if p<= e:
 		return np.random.randint(env.action_space.n)
 	else:
 		Q = Q_net.predict(np.array([state]))[0]
@@ -68,15 +77,34 @@ def train():
 	next_states = np.array(extract(batch,3))
 	dones = extract(batch, 4)
 
-	Q_target = Q_target_net.predict(np.array(next_states))
-	
-	for i in range(batch_size):
-		target = rewards[i]
-		
-		if not dones[i]:
-			target = target + gamma*Q_target[i].max()
+	Q_next = Q_target_net.predict(next_states)
+	Q_target = Q_net.predict(states)
 
-		Q_target[i][actions[i]] = target
+	if not DOUBLE_DQN:
+		
+		for i in range(batch_size):
+			target = rewards[i]
+			
+			if not dones[i]:
+				target = target + gamma*Q_next[i].max()
+
+			Q_target[i][actions[i]] = target
+	
+	else:
+
+		Q_next_2 = Q_net.predict(next_states)
+		
+		for i in range(batch_size):
+			target = rewards[i]
+
+			if not dones[i]:
+				target = target + gamma* Q_next[i][Q_next_2[i].argmax()]
+
+			Q_target[i][actions[i]] = target
+	
+
+
+
 
 	Q_net.fit(states, Q_target, verbose = False)
 
@@ -85,27 +113,40 @@ def add_transition(transition):
 	global replay_buffer, replay_buffer_size
 	
 	replay_buffer.append(transition)
-	replay_buffer = replay_buffer[-replay_buffer_size:]
+
+	if len(replay_buffer)>replay_buffer_size:
+		del replay_buffer[:1]
 
 for i_episode in range(episodes):
 	s = env.reset()
 
 	for t in range(max_timesteps):
 		#env.render()
-		a = get_episilon_greedy_action(s, e= min(initial_episilon - exploration_linear_decay*timestep, episilon))
+		e = max(initial_episilon - exploration_linear_decay* (timestep-random_steps) , episilon)
+		a = get_episilon_greedy_action(s, e) 
 		ss, r, done, info = env.step(a)
 		add_transition((s,a,r,ss, done))
+		s = ss
 		
-		if len(replay_buffer) > batch_size:
+		if len(replay_buffer) > batch_size and timestep%update_frequency==0:
 			train()
 
 		if timestep%C ==0:
+			print('saving')
+			print('STATUS:')
+			print('Episilon: ', e)
+			print('EPISODES COMPLETED: ', i_episode+1)
+			print('timestep: ', timestep)
+			print('Mean number of timesteps: ', np.array(episode_timestep_history[-100:]).mean())
+			print('------------------------------------')
 			Q_target_net.set_weights(Q_net.get_weights()) 
+			Q_net.save("DQN.h5")
 
 		timestep += 1
 
 		if done:
 
-			print("Episode", i_episode," done in ", t, " timesteps")
+			#print("Episode", i_episode," done in ", t, " timesteps")
+			episode_timestep_history.append(t)
 			break
 env.close()
