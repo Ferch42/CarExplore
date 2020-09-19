@@ -5,29 +5,31 @@ import random
 import keras
 from keras.models import Sequential
 from keras.layers import Dense
-from keras.optimizers import Adam
+from keras.optimizers import Adam, RMSprop
 from matplotlib import pyplot as plt
+import tensorflow as tf
 
 
 # Hyperparameters
 max_timesteps = 10000
 episodes = 1000000
-random_steps = 5000
+random_steps = 50000
 initial_episilon = 1
 episilon = 0.1
 update_frequency = 4
-exploration_annealing_frames = 10000
+exploration_annealing_frames = 1000000
 gamma = 0.99
 batch_size = 32
 lr = 0.00025
 C = 10000
-clip_norm = 10
+clip_norm = 1
 replay_buffer_size = 1000000
 DOUBLE_DQN = True
+OPT = Adam
 
 # Variables
-#env = GoalEnvironment()
-env = gym.make('CartPole-v1')
+env = GoalEnvironment()
+#env = gym.make('CartPole-v1')
 replay_buffer = list()
 timestep = 0
 episode_timestep_history = list()
@@ -37,9 +39,8 @@ exploration_linear_decay = 1/exploration_annealing_frames
 
 # Model definition and clonning
 Q_net = Sequential()
-Q_net.add(Dense(32, input_shape = env.observation_space.shape, activation = 'relu'))
-Q_net.add(Dense(32, activation = 'relu'))
-Q_net.add(Dense(32, activation = 'relu'))
+Q_net.add(Dense(64, input_shape = env.observation_space.shape, activation = 'relu'))
+Q_net.add(Dense(64, activation = 'relu'))
 Q_net.add(Dense(env.action_space.n, activation= 'linear'))
 print(Q_net.summary())
 
@@ -47,8 +48,8 @@ Q_target_net = keras.models.clone_model(Q_net)
 Q_target_net.set_weights(Q_net.get_weights()) 
 
 # Model compiling 
-Q_net.compile(loss = 'mse', optimizer = Adam(learning_rate = lr, clipnorm = clip_norm))
-Q_target_net.compile(loss = 'mse', optimizer = Adam(learning_rate = lr, clipnorm = clip_norm))
+Q_net.compile(loss = tf.keras.losses.Huber(), optimizer = OPT(learning_rate = lr, clipnorm = clip_norm))
+Q_target_net.compile(loss = tf.keras.losses.Huber(), optimizer = OPT(learning_rate = lr, clipnorm = clip_norm))
 
 # Helper functions
 def get_episilon_greedy_action(state,e):
@@ -85,6 +86,9 @@ def plot_reward_history():
 
 
 def smooth(l, smooth_interval = 100):
+
+	if len(l)==0:
+		return l
 
 	npl = np.array(l)
 	smoothed_list = np.zeros(len(l))

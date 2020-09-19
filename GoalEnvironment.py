@@ -55,7 +55,7 @@ class GoalEnvironment(gym.Env):
 		"""
 		Gets the status to be returned by the environment
 		"""
-		return self._get_observation(), self.reward, self.done , None
+		return self._get_observation(), self.get_reward(), self.done , None
 
 
 	def render(self, mode ='human'):
