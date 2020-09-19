@@ -6,16 +6,17 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
+from matplotlib import pyplot as plt
 
 
 # Hyperparameters
 max_timesteps = 10000
 episodes = 1000000
-random_steps = 50000
+random_steps = 5000
 initial_episilon = 1
 episilon = 0.1
 update_frequency = 4
-exploration_annealing_frames = 1000000
+exploration_annealing_frames = 10000
 gamma = 0.99
 batch_size = 32
 lr = 0.00025
@@ -25,11 +26,12 @@ replay_buffer_size = 1000000
 DOUBLE_DQN = True
 
 # Variables
-env = GoalEnvironment()
-#env = gym.make('CartPole-v1')
+#env = GoalEnvironment()
+env = gym.make('CartPole-v1')
 replay_buffer = list()
 timestep = 0
 episode_timestep_history = list()
+reward_history = list()
 C = C *update_frequency
 exploration_linear_decay = 1/exploration_annealing_frames
 
@@ -59,6 +61,38 @@ def get_episilon_greedy_action(state,e):
 	else:
 		Q = Q_net.predict(np.array([state]))[0]
 		return Q.argmax()
+
+
+def plot_episode_lenght_history():
+
+	global episode_timestep_history
+
+	plt.title("EPISODE LENGHT HISTORY")
+	plt.plot(range(len(episode_timestep_history)), episode_timestep_history)
+	plt.plot(range(len(episode_timestep_history)), smooth(episode_timestep_history))
+	plt.savefig("EpisodeLenght.png")
+	plt.clf()
+
+def plot_reward_history():
+
+	global reward_history
+
+	plt.title("Reward HISTORY")
+	plt.plot(range(len(reward_history)), reward_history)
+	plt.plot(range(len(reward_history)), smooth(reward_history))
+	plt.savefig("Reward.png")
+	plt.clf()
+
+
+def smooth(l, smooth_interval = 100):
+
+	npl = np.array(l)
+	smoothed_list = np.zeros(len(l))
+	smoothed_list[0] = npl[0]
+	for i in range(1,len(l)):
+		smoothed_list[i] = npl[max((i-smooth_interval),0):i].mean()
+
+	return smoothed_list
 
 
 def extract(l, i):
@@ -119,12 +153,14 @@ def add_transition(transition):
 
 for i_episode in range(episodes):
 	s = env.reset()
+	cumulative_reward = 0
 
 	for t in range(max_timesteps):
 		#env.render()
 		e = max(initial_episilon - exploration_linear_decay* (timestep-random_steps) , episilon)
 		a = get_episilon_greedy_action(s, e) 
-		ss, r, done, info = env.step(a)
+		ss, r, done, info = env.step(a)	
+		cumulative_reward = cumulative_reward + r	
 		add_transition((s,a,r,ss, done))
 		s = ss
 		
@@ -139,6 +175,8 @@ for i_episode in range(episodes):
 			print('timestep: ', timestep)
 			print('Mean number of timesteps: ', np.array(episode_timestep_history[-100:]).mean())
 			print('------------------------------------')
+			plot_reward_history()
+			plot_episode_lenght_history()
 			Q_target_net.set_weights(Q_net.get_weights()) 
 			Q_net.save("DQN.h5")
 
@@ -148,5 +186,6 @@ for i_episode in range(episodes):
 
 			#print("Episode", i_episode," done in ", t, " timesteps")
 			episode_timestep_history.append(t)
+			reward_history.append(cumulative_reward)
 			break
 env.close()
