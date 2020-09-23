@@ -6,7 +6,9 @@ from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGH
 from Box2D.b2 import polygonShape, dynamicBody
 from utils.car_explore_utils import deserialize_areas, deserialize_obstacles
 from terrains.TerrainFactory import TerrainFactory
+from terrains.Terrain import Terrain
 from enums.Body import Body
+from enums.Axis import Axis
 from events.EventFactory import EventFactory
 
 class GameController(metaclass= Singleton):
@@ -131,6 +133,7 @@ class GameController(metaclass= Singleton):
 	def step(self):
 
 		self.world.Step(self.TIME_STEP, 10, 10)
+		self.world.ClearForces()
 
 	def __build_obstacles(self):
 		"""
@@ -143,11 +146,12 @@ class GameController(metaclass= Singleton):
 		"""
 		Returns the car state, ie, its x and y position, its velocity and torque
 		"""
-		x, y = self.car.worldCenter
+		x, y = self.car.position
+		angle = self.car.angle
 		vel_x, vel_y = self.car.linearVelocity
 		ang_vel = self.car.angularVelocity
 
-		return [x,y,vel_x,vel_y,ang_vel]
+		return [x, y, angle, vel_x, vel_y, ang_vel]
 
 	def _reset_car(self):
 		"""

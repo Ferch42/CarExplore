@@ -3,7 +3,7 @@
 
 # pybox2d and pygame variables
 
-PPM = 10 # Pixel per meters
+PPM = 20 # Pixel per meters
 TARGET_FPS = 60
 TIME_STEP = 1.0/TARGET_FPS
 SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600

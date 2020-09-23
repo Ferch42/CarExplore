@@ -14,7 +14,7 @@ class GoalEnvironment(gym.Env):
 		self.controller = GoalController(random_GOAL = random_GOAL)
 		self.interface = GoalInterface()
 		self.interface.set_controller(self.controller)
-		self.observation_space_n = 5 if not random_GOAL else 7
+		self.observation_space_n = 6 if not random_GOAL else 8
 		self.observation_space = gym.spaces.Box(low = np.full(self.observation_space_n, -np.inf), high = np.full(self.observation_space_n, np.inf))
 		self.action_space = gym.spaces.Discrete(5)
 		self.reward = -1
@@ -22,6 +22,7 @@ class GoalEnvironment(gym.Env):
 		self.max_timesteps = max_timesteps
 		self.timestep = 1
 		self.random_GOAL = random_GOAL
+		self.max_length = np.sqrt(self.controller.WORLD_WIDTH**2 + self.controller.WORLD_HEIGHT**2) 
 
 	def step(self, action):
 
@@ -55,7 +56,7 @@ class GoalEnvironment(gym.Env):
 		"""
 		Gets the status to be returned by the environment
 		"""
-		return self._get_observation(), self.get_reward(), self.done , None
+		return self._get_observation(), self.reward, self.done , None
 
 
 	def render(self, mode ='human'):
@@ -68,7 +69,8 @@ class GoalEnvironment(gym.Env):
 
 	def get_reward(self):
 
-		x_car, y_car, _,_,_ = self.controller.get_car_state()
+		observation  = self.controller.get_car_state()
+		x_car, y_car = observation[0], observation[1]
 		GOAL_x, GOAL_y = self.controller.get_GOAL_pos()
 		
 		dist = np.sqrt((x_car-GOAL_x)**2+ (y_car- GOAL_y)**2)

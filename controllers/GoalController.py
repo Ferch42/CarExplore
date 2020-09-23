@@ -9,7 +9,7 @@ class GoalController(GameController):
 	def __init__(self, random_GOAL = False):
 
 		super().__init__()
-		self.__GOAL_pos = (30,30)
+		self.__GOAL_pos = (20,20)
 		self.__GOAL_found = False
 		self.__GOAL_radius = 1
 		self.__GOAL_diameter = 2*self.__GOAL_radius

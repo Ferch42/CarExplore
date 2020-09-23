@@ -16,7 +16,7 @@ episodes = 1000000
 random_steps = 50000
 initial_episilon = 1
 episilon = 0.1
-update_frequency = 4
+update_frequency = 1
 exploration_annealing_frames = 1000000
 gamma = 0.99
 batch_size = 32
@@ -25,24 +25,32 @@ C = 10000
 clip_norm = 1
 replay_buffer_size = 1000000
 DOUBLE_DQN = True
+load_weights = False
+average_proportion = 0.05
 OPT = Adam
 
 # Variables
 env = GoalEnvironment()
-#env = gym.make('CartPole-v1')
+#env = gym.make('Acrobot-v1')
 replay_buffer = list()
 timestep = 0
 episode_timestep_history = list()
 reward_history = list()
 C = C *update_frequency
 exploration_linear_decay = 1/exploration_annealing_frames
+running_reward = 0
 
 # Model definition and clonning
 Q_net = Sequential()
-Q_net.add(Dense(64, input_shape = env.observation_space.shape, activation = 'relu'))
-Q_net.add(Dense(64, activation = 'relu'))
+Q_net.add(Dense(256, input_shape = env.observation_space.shape, activation = 'relu'))
+Q_net.add(Dense(256, activation = 'relu'))
+#Q_net.add(Dense(512, activation = 'relu'))
 Q_net.add(Dense(env.action_space.n, activation= 'linear'))
 print(Q_net.summary())
+
+if load_weights:
+	print("LOADED WEIGHTS")
+	Q_net.load_weights("DQN.h5")
 
 Q_target_net = keras.models.clone_model(Q_net)
 Q_target_net.set_weights(Q_net.get_weights()) 
@@ -85,7 +93,7 @@ def plot_reward_history():
 	plt.clf()
 
 
-def smooth(l, smooth_interval = 100):
+def smooth(l, smooth_interval = 1000):
 
 	if len(l)==0:
 		return l
@@ -119,7 +127,7 @@ def train():
 	Q_target = Q_net.predict(states)
 
 	if not DOUBLE_DQN:
-		
+
 		for i in range(batch_size):
 			target = rewards[i]
 			
@@ -157,6 +165,7 @@ def add_transition(transition):
 
 for i_episode in range(episodes):
 	s = env.reset()
+	s_start = s
 	cumulative_reward = 0
 
 	for t in range(max_timesteps):
@@ -164,11 +173,13 @@ for i_episode in range(episodes):
 		e = max(initial_episilon - exploration_linear_decay* (timestep-random_steps) , episilon)
 		a = get_episilon_greedy_action(s, e) 
 		ss, r, done, info = env.step(a)	
+		#print(r)
 		cumulative_reward = cumulative_reward + r	
 		add_transition((s,a,r,ss, done))
 		s = ss
 		
 		if len(replay_buffer) > batch_size and timestep%update_frequency==0:
+			#print('training')
 			train()
 
 		if timestep%C ==0:
@@ -178,6 +189,8 @@ for i_episode in range(episodes):
 			print('EPISODES COMPLETED: ', i_episode+1)
 			print('timestep: ', timestep)
 			print('Mean number of timesteps: ', np.array(episode_timestep_history[-100:]).mean())
+			print('Running reward: ', running_reward)
+			print('Q VALUES for the initial state:', Q_net.predict(np.array([s_start]))[0])
 			print('------------------------------------')
 			plot_reward_history()
 			plot_episode_lenght_history()
@@ -191,5 +204,6 @@ for i_episode in range(episodes):
 			#print("Episode", i_episode," done in ", t, " timesteps")
 			episode_timestep_history.append(t)
 			reward_history.append(cumulative_reward)
+			running_reward = running_reward* (1-average_proportion) + average_proportion * cumulative_reward
 			break
 env.close()
