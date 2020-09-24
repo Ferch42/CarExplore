@@ -16,7 +16,7 @@ episodes = 1000000
 random_steps = 50000
 initial_episilon = 1
 episilon = 0.1
-update_frequency = 1
+update_frequency = 4
 exploration_annealing_frames = 1000000
 gamma = 0.99
 batch_size = 32
@@ -26,7 +26,7 @@ clip_norm = 1
 replay_buffer_size = 1000000
 DOUBLE_DQN = True
 load_weights = False
-average_proportion = 0.05
+average_proportion = 0.01
 OPT = Adam
 
 # Variables
@@ -42,8 +42,8 @@ running_reward = 0
 
 # Model definition and clonning
 Q_net = Sequential()
-Q_net.add(Dense(256, input_shape = env.observation_space.shape, activation = 'relu'))
-Q_net.add(Dense(256, activation = 'relu'))
+Q_net.add(Dense(64, input_shape = env.observation_space.shape, activation = 'relu'))
+Q_net.add(Dense(64, activation = 'relu'))
 #Q_net.add(Dense(512, activation = 'relu'))
 Q_net.add(Dense(env.action_space.n, activation= 'linear'))
 print(Q_net.summary())
@@ -93,7 +93,7 @@ def plot_reward_history():
 	plt.clf()
 
 
-def smooth(l, smooth_interval = 1000):
+def smooth(l, smooth_interval = 100):
 
 	if len(l)==0:
 		return l
