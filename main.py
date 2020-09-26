@@ -8,6 +8,8 @@ from keras.layers import Dense
 from keras.optimizers import Adam, RMSprop
 from matplotlib import pyplot as plt
 import tensorflow as tf
+from time import time
+from datetime import timedelta
 
 
 # Hyperparameters
@@ -28,6 +30,7 @@ DOUBLE_DQN = True
 load_weights = False
 average_proportion = 0.01
 OPT = Adam
+Hindsight_experience_replay = True
 
 # Variables
 env = GoalEnvironment()
@@ -42,8 +45,8 @@ running_reward = 0
 
 # Model definition and clonning
 Q_net = Sequential()
-Q_net.add(Dense(64, input_shape = env.observation_space.shape, activation = 'relu'))
-Q_net.add(Dense(64, activation = 'relu'))
+Q_net.add(Dense(256, input_shape = env.observation_space.shape, activation = 'relu'))
+Q_net.add(Dense(256, activation = 'relu'))
 #Q_net.add(Dense(512, activation = 'relu'))
 Q_net.add(Dense(env.action_space.n, activation= 'linear'))
 print(Q_net.summary())
@@ -71,6 +74,14 @@ def get_episilon_greedy_action(state,e):
 		Q = Q_net.predict(np.array([state]))[0]
 		return Q.argmax()
 
+
+def get_reward(s,a,ss, g, episilon = 1):
+
+	ss_x,ss_y = ss[0:2]
+	g_x, g_y = g
+	dist = np.sqrt((ss_x-g_x)**2 + (ss_y- g_y)**2)
+	
+	return -int(dist > episilon)
 
 def plot_episode_lenght_history():
 
@@ -163,19 +174,33 @@ def add_transition(transition):
 	if len(replay_buffer)>replay_buffer_size:
 		del replay_buffer[:1]
 
+t0 = time()
 for i_episode in range(episodes):
 	s = env.reset()
+	Goal = s[-2:].copy()
 	s_start = s
 	cumulative_reward = 0
+	final_state = None
+	buffer_accumulator = list()
 
 	for t in range(max_timesteps):
 		#env.render()
+		# Epsilon greedy
 		e = max(initial_episilon - exploration_linear_decay* (timestep-random_steps) , episilon)
 		a = get_episilon_greedy_action(s, e) 
+		
 		ss, r, done, info = env.step(a)	
+		r = get_reward(s,a,ss,Goal)
 		#print(r)
+		
 		cumulative_reward = cumulative_reward + r	
-		add_transition((s,a,r,ss, done))
+		final_state = ss[0:2].copy()
+
+		# Storing experience
+		experience = (s,a,r,ss, done)
+		#print(experience)
+		add_transition(experience)
+		buffer_accumulator.append(experience)
 		s = ss
 		
 		if len(replay_buffer) > batch_size and timestep%update_frequency==0:
@@ -189,7 +214,8 @@ for i_episode in range(episodes):
 			print('EPISODES COMPLETED: ', i_episode+1)
 			print('timestep: ', timestep)
 			print('Mean number of timesteps: ', np.array(episode_timestep_history[-100:]).mean())
-			print('Running reward: ', running_reward)
+			print('Running distance: ', running_reward)
+			print('TIME ELAPSED: ', timedelta(seconds = time()-t0))
 			print('Q VALUES for the initial state:', Q_net.predict(np.array([s_start]))[0])
 			print('------------------------------------')
 			plot_reward_history()
@@ -202,8 +228,30 @@ for i_episode in range(episodes):
 		if done:
 
 			#print("Episode", i_episode," done in ", t, " timesteps")
+			final_x, final_y = final_state
+			for e in buffer_accumulator:
+
+				s,a,r,ss, done = e
+				
+				s = s.copy()
+				ss = ss.copy()
+				s[-2] = final_x
+				s[-1] = final_y
+				ss[-2] = final_x
+				ss[-1] = final_y
+
+
+				r = get_reward(s,a,ss,final_state)
+				new_experience = (s,a,r,ss, done)
+				#print(new_experience)
+				add_transition(new_experience)
+
+
 			episode_timestep_history.append(t)
-			reward_history.append(cumulative_reward)
-			running_reward = running_reward* (1-average_proportion) + average_proportion * cumulative_reward
+			#print(Goal)
+			#print(final_state)
+			dist = np.sqrt((final_state[0] - Goal[0])**2 + (final_state[1] - Goal[1])**2)
+			reward_history.append(dist)
+			running_reward = running_reward* (1-average_proportion) + average_proportion * dist
 			break
 env.close()

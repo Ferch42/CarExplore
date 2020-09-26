@@ -31,19 +31,19 @@ class EventFactory:
 		if type(event) == int:
 
 			if event == 0:
-				return CarEvent.NULL
-
-			if event == 1:
 				return CarEvent.ACCELERATE
 
-			if event == 2:
-				return CarEvent.BRAKE
-
-			if event == 3:
+			if event == 1:
 				return CarEvent.TURN_LEFT
 
-			if event == 4:
+			if event == 2:
 				return CarEvent.TURN_RIGHT
+
+			if event == 3:
+				return CarEvent.BRAKE
+
+			if event == 4:
+				return CarEvent.NULL
 
 
 

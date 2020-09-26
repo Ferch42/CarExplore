@@ -14,9 +14,9 @@ class GoalEnvironment(gym.Env):
 		self.controller = GoalController(random_GOAL = random_GOAL)
 		self.interface = GoalInterface()
 		self.interface.set_controller(self.controller)
-		self.observation_space_n = 6 if not random_GOAL else 8
+		self.observation_space_n = 8
 		self.observation_space = gym.spaces.Box(low = np.full(self.observation_space_n, -np.inf), high = np.full(self.observation_space_n, np.inf))
-		self.action_space = gym.spaces.Discrete(5)
+		self.action_space = gym.spaces.Discrete(3)
 		self.reward = -1
 		self.done = False
 		self.max_timesteps = max_timesteps
@@ -26,8 +26,8 @@ class GoalEnvironment(gym.Env):
 
 	def step(self, action):
 
-		starting_position = self.controller.get_car_state()
-		car_start_x, car_start_y = starting_position[0], starting_position[1]
+		#starting_position = self.controller.get_car_state()
+		#car_start_x, car_start_y = starting_position[0], starting_position[1]
 		
 		self.controller.update()
 		self.controller.handle_event(action)
@@ -38,23 +38,23 @@ class GoalEnvironment(gym.Env):
 		# The reward is the cosine of the angle between the inital distance vector from the car to the goal
 		# and the distance vector that the car traveled
 
-		finishing_position = self.controller.get_car_state()
-		car_finish_x, car_finish_y = finishing_position[0], finishing_position[1]
+		#finishing_position = self.controller.get_car_state()
+		#car_finish_x, car_finish_y = finishing_position[0], finishing_position[1]
 
-		u_x, u_y = car_finish_x - car_start_x, car_finish_y - car_start_y
+		#u_x, u_y = car_finish_x - car_start_x, car_finish_y - car_start_y
 
-		traveled_distance = np.sqrt(u_x**2 + u_y**2)
+		#traveled_distance = np.sqrt(u_x**2 + u_y**2)
 
-		GOAL_x, GOAL_y = self.controller.get_GOAL_pos()
+		#GOAL_x, GOAL_y = self.controller.get_GOAL_pos()
 
-		v_x , v_y = GOAL_x - car_start_x, GOAL_y - car_start_y
+		#v_x , v_y = GOAL_x - car_start_x, GOAL_y - car_start_y
 
-		cosine = (u_x* v_x + u_y *v_y)/ (np.sqrt(u_x**2 + u_y**2) * np.sqrt(v_x**2 + v_y**2))
+		#cosine = (u_x* v_x + u_y *v_y)/ (np.sqrt(u_x**2 + u_y**2) * np.sqrt(v_x**2 + v_y**2))
 
-		r = np.nan_to_num(cosine)* traveled_distance 
+		#r = np.nan_to_num(cosine)* traveled_distance 
 		#r = r - 0.1 if not self.controller.get_GOAL_found() else 100
 		#print(r)
-		return self._get_observation(), r, self.done , {}
+		return self._get_observation(), self.reward, self.done , {}
 
 	def reset(self):
 
@@ -69,8 +69,8 @@ class GoalEnvironment(gym.Env):
 		observation = self.controller.get_car_state()
 		GOAL_x, GOAL_y = self.controller.get_GOAL_pos()
 
-		if self.random_GOAL:
-			observation = observation+[GOAL_x, GOAL_y]
+		#if self.random_GOAL or True:
+		observation = observation+[GOAL_x, GOAL_y]
 
 		return np.array(observation)
 
