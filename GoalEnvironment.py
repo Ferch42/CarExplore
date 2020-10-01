@@ -9,14 +9,14 @@ class GoalEnvironment(gym.Env):
 
 	metadata = {"render.modes": ['human']}
 
-	def __init__(self, random_GOAL = False, max_timesteps = 200):
+	def __init__(self, random_GOAL = False, max_timesteps = 500):
 
 		self.controller = GoalController(random_GOAL = random_GOAL)
 		self.interface = GoalInterface()
 		self.interface.set_controller(self.controller)
 		self.observation_space_n = 8
 		self.observation_space = gym.spaces.Box(low = np.full(self.observation_space_n, -np.inf), high = np.full(self.observation_space_n, np.inf))
-		self.action_space = gym.spaces.Discrete(3)
+		self.action_space = gym.spaces.Discrete(4)
 		self.reward = -1
 		self.done = False
 		self.max_timesteps = max_timesteps
@@ -69,8 +69,8 @@ class GoalEnvironment(gym.Env):
 		observation = self.controller.get_car_state()
 		GOAL_x, GOAL_y = self.controller.get_GOAL_pos()
 
-		#if self.random_GOAL or True:
-		observation = observation+[GOAL_x, GOAL_y]
+		if self.random_GOAL or True:
+			observation = observation+[GOAL_x, GOAL_y]
 
 		return np.array(observation)
 

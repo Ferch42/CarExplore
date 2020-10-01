@@ -1,4 +1,5 @@
 from GoalEnvironment import GoalEnvironment
+from GridGoalEnvironment import GridGoalEnvironment
 import numpy as np
 import gym
 import random
@@ -13,7 +14,7 @@ from datetime import timedelta
 
 
 # Hyperparameters
-max_timesteps = 10000
+max_timesteps = 1000000
 episodes = 1000000
 random_steps = 50000
 initial_episilon = 1
@@ -33,8 +34,10 @@ OPT = Adam
 Hindsight_experience_replay = True
 
 # Variables
-env = GoalEnvironment()
+env = GoalEnvironment(random_GOAL = True)
 #env = gym.make('Acrobot-v1')
+#env = GridGoalEnvironment(n = 10,shuffle_goal = False, discrete_goal = True, stochastic = True, holonomic = False)
+
 replay_buffer = list()
 timestep = 0
 episode_timestep_history = list()
@@ -45,12 +48,13 @@ running_reward = 0
 
 # Model definition and clonning
 Q_net = Sequential()
-Q_net.add(Dense(256, input_shape = env.observation_space.shape, activation = 'relu'))
-Q_net.add(Dense(256, activation = 'relu'))
-#Q_net.add(Dense(512, activation = 'relu'))
+Q_net.add(Dense(128, input_shape = env.observation_space.shape, activation = 'relu'))
+Q_net.add(Dense(128, activation = 'relu'))
+Q_net.add(Dense(128, activation = 'relu'))
 Q_net.add(Dense(env.action_space.n, activation= 'linear'))
 print(Q_net.summary())
 
+#assert(load_weights)
 if load_weights:
 	print("LOADED WEIGHTS")
 	Q_net.load_weights("DQN.h5")
@@ -75,13 +79,19 @@ def get_episilon_greedy_action(state,e):
 		return Q.argmax()
 
 
-def get_reward(s,a,ss, g, episilon = 1):
+def get_reward1(s,a,ss, g, episilon = 1):
 
 	ss_x,ss_y = ss[0:2]
 	g_x, g_y = g
 	dist = np.sqrt((ss_x-g_x)**2 + (ss_y- g_y)**2)
 	
 	return -int(dist > episilon)
+
+def get_reward2(s,a,ss,g,episilon = 1):
+
+	reached_goal = abs(ss[0]- g[0])<= episilon and abs(ss[1]-g[1])<=episilon
+	
+	return - int(not reached_goal)
 
 def plot_episode_lenght_history():
 
@@ -175,6 +185,8 @@ def add_transition(transition):
 		del replay_buffer[:1]
 
 t0 = time()
+get_reward = get_reward1
+
 for i_episode in range(episodes):
 	s = env.reset()
 	Goal = s[-2:].copy()
@@ -192,6 +204,7 @@ for i_episode in range(episodes):
 		ss, r, done, info = env.step(a)	
 		r = get_reward(s,a,ss,Goal)
 		#print(r)
+		#print(s)
 		
 		cumulative_reward = cumulative_reward + r	
 		final_state = ss[0:2].copy()
@@ -213,7 +226,7 @@ for i_episode in range(episodes):
 			print('Episilon: ', e)
 			print('EPISODES COMPLETED: ', i_episode+1)
 			print('timestep: ', timestep)
-			print('Mean number of timesteps: ', np.array(episode_timestep_history[-100:]).mean())
+			print('Mean number of timesteps: ', np.array(episode_timestep_history[-200:]).mean())
 			print('Running distance: ', running_reward)
 			print('TIME ELAPSED: ', timedelta(seconds = time()-t0))
 			print('Q VALUES for the initial state:', Q_net.predict(np.array([s_start]))[0])
@@ -228,23 +241,31 @@ for i_episode in range(episodes):
 		if done:
 
 			#print("Episode", i_episode," done in ", t, " timesteps")
-			final_x, final_y = final_state
-			for e in buffer_accumulator:
+			if Hindsight_experience_replay:
 
-				s,a,r,ss, done = e
+				#print('alsd')
+				#print(buffer_accumulator)
+				extra_goals = [(x[0][0],x[0][1]) for x in random.sample(buffer_accumulator,min(4, len(buffer_accumulator)))]
 				
-				s = s.copy()
-				ss = ss.copy()
-				s[-2] = final_x
-				s[-1] = final_y
-				ss[-2] = final_x
-				ss[-1] = final_y
+				for eg in extra_goals:
+				
+					final_x, final_y = eg
+					for e in buffer_accumulator:
+
+						s,a,r,ss, done = e
+						
+						s = s.copy()
+						ss = ss.copy()
+						s[-2] = final_x
+						s[-1] = final_y
+						ss[-2] = final_x
+						ss[-1] = final_y
 
 
-				r = get_reward(s,a,ss,final_state)
-				new_experience = (s,a,r,ss, done)
-				#print(new_experience)
-				add_transition(new_experience)
+						r = get_reward(s,a,ss,eg)
+						new_experience = (s,a,r,ss, done)
+						#print(new_experience)
+						add_transition(new_experience)
 
 
 			episode_timestep_history.append(t)
