@@ -51,7 +51,7 @@ class GridGoalEnvironment:
 		if self.shuffle_goal:
 			self.reshuffle_goal()
 
-		return np.array(self.get_state())
+		return self.get_state()
 
 	def get_state(self):
 

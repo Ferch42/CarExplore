@@ -16,7 +16,7 @@ class GoalEnvironment(gym.Env):
 		self.interface.set_controller(self.controller)
 		self.observation_space_n = 8
 		self.observation_space = gym.spaces.Box(low = np.full(self.observation_space_n, -np.inf), high = np.full(self.observation_space_n, np.inf))
-		self.action_space = gym.spaces.Discrete(4)
+		self.action_space = gym.spaces.Discrete(5)
 		self.reward = -1
 		self.done = False
 		self.max_timesteps = max_timesteps

@@ -9,8 +9,10 @@ from keras.layers import Dense
 from keras.optimizers import Adam, RMSprop
 from matplotlib import pyplot as plt
 import tensorflow as tf
+import pickle
 from time import time
 from datetime import timedelta
+from sklearn.preprocessing import StandardScaler
 
 
 # Hyperparameters
@@ -19,7 +21,7 @@ episodes = 1000000
 random_steps = 50000
 initial_episilon = 1
 episilon = 0.1
-update_frequency = 4
+update_frequency = 1
 exploration_annealing_frames = 1000000
 gamma = 0.99
 batch_size = 32
@@ -36,7 +38,7 @@ Hindsight_experience_replay = True
 # Variables
 env = GoalEnvironment(random_GOAL = True)
 #env = gym.make('Acrobot-v1')
-#env = GridGoalEnvironment(n = 10,shuffle_goal = False, discrete_goal = True, stochastic = True, holonomic = False)
+#env = GridGoalEnvironment(n = 10,shuffle_goal = True, discrete_goal = True, stochastic = True, holonomic = False)
 
 replay_buffer = list()
 timestep = 0
@@ -45,16 +47,20 @@ reward_history = list()
 C = C *update_frequency
 exploration_linear_decay = 1/exploration_annealing_frames
 running_reward = 0
+scaler = StandardScaler()
+min_reward = - 1/(1-gamma)
 
 # Model definition and clonning
 Q_net = Sequential()
-Q_net.add(Dense(128, input_shape = env.observation_space.shape, activation = 'relu'))
-Q_net.add(Dense(128, activation = 'relu'))
-Q_net.add(Dense(128, activation = 'relu'))
+Q_net.add(Dense(64, input_shape = env.observation_space.shape, activation = 'relu'))
+Q_net.add(Dense(64, activation = 'relu'))
+Q_net.add(Dense(64, activation = 'relu'))
 Q_net.add(Dense(env.action_space.n, activation= 'linear'))
 print(Q_net.summary())
 
-#assert(load_weights)
+#assert(not load_weights)
+#assert( DOUBLE_DQN)
+
 if load_weights:
 	print("LOADED WEIGHTS")
 	Q_net.load_weights("DQN.h5")
@@ -63,10 +69,21 @@ Q_target_net = keras.models.clone_model(Q_net)
 Q_target_net.set_weights(Q_net.get_weights()) 
 
 # Model compiling 
-Q_net.compile(loss = tf.keras.losses.Huber(), optimizer = OPT(learning_rate = lr, clipnorm = clip_norm))
-Q_target_net.compile(loss = tf.keras.losses.Huber(), optimizer = OPT(learning_rate = lr, clipnorm = clip_norm))
+Q_net.compile(loss = "mse", optimizer = OPT(learning_rate = lr, clipnorm = clip_norm))
+Q_target_net.compile(loss = "mse", optimizer = OPT(learning_rate = lr, clipnorm = clip_norm))
+
+
+#ower_normalized_bound = np.full(env.observation_space.shape, -5)
+#per_normalized_bound = np.full( env.observation_space.shape, 5)
 
 # Helper functions
+def normalize(states):
+
+	global scaler
+	scaler.partial_fit(states)
+
+	return scaler.transform(states)
+
 def get_episilon_greedy_action(state,e):
 	global Q_net
 
@@ -75,7 +92,8 @@ def get_episilon_greedy_action(state,e):
 	if p<= e:
 		return np.random.randint(env.action_space.n)
 	else:
-		Q = Q_net.predict(np.array([state]))[0]
+		s = normalize(np.array([state]))
+		Q = Q_net.predict(s)[0]
 		return Q.argmax()
 
 
@@ -114,7 +132,7 @@ def plot_reward_history():
 	plt.clf()
 
 
-def smooth(l, smooth_interval = 100):
+def smooth(l, smooth_interval = 200):
 
 	if len(l)==0:
 		return l
@@ -142,6 +160,10 @@ def train():
 	actions = np.array(extract(batch,1))
 	rewards = np.array(extract(batch,2))
 	next_states = np.array(extract(batch,3))
+
+	states = normalize(states)
+	next_states = normalize(next_states)
+
 	dones = extract(batch, 4)
 
 	Q_next = Q_target_net.predict(next_states)
@@ -155,6 +177,7 @@ def train():
 			if not dones[i]:
 				target = target + gamma*Q_next[i].max()
 
+			target = np.clip(target, min_reward, 0)
 			Q_target[i][actions[i]] = target
 	
 	else:
@@ -167,6 +190,7 @@ def train():
 			if not dones[i]:
 				target = target + gamma* Q_next[i][Q_next_2[i].argmax()]
 
+			target = np.clip(target, min_reward, 0)
 			Q_target[i][actions[i]] = target
 	
 
@@ -221,12 +245,15 @@ for i_episode in range(episodes):
 			train()
 
 		if timestep%C ==0:
+
+			last_episodes = np.array(episode_timestep_history[-200:])
 			print('saving')
 			print('STATUS:')
 			print('Episilon: ', e)
 			print('EPISODES COMPLETED: ', i_episode+1)
 			print('timestep: ', timestep)
-			print('Mean number of timesteps: ', np.array(episode_timestep_history[-200:]).mean())
+			print('Mean number of timesteps: ', last_episodes.mean())
+			print('GOAL REACHED PERCENTAGE: ', np.array([x!=env.max_timesteps for x in last_episodes]).mean())
 			print('Running distance: ', running_reward)
 			print('TIME ELAPSED: ', timedelta(seconds = time()-t0))
 			print('Q VALUES for the initial state:', Q_net.predict(np.array([s_start]))[0])
@@ -235,6 +262,7 @@ for i_episode in range(episodes):
 			plot_episode_lenght_history()
 			Q_target_net.set_weights(Q_net.get_weights()) 
 			Q_net.save("DQN.h5")
+			pickle.dump(scaler, open('scaler.pkl', 'wb'))
 
 		timestep += 1
 
@@ -263,9 +291,11 @@ for i_episode in range(episodes):
 
 
 						r = get_reward(s,a,ss,eg)
+						done = r==0
 						new_experience = (s,a,r,ss, done)
 						#print(new_experience)
 						add_transition(new_experience)
+
 
 
 			episode_timestep_history.append(t)

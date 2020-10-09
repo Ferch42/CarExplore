@@ -62,7 +62,7 @@ class GameController(metaclass= Singleton):
 		Initializes the car
 		"""
 
-		self.car = self.world.CreateDynamicBody(position=(10, 15))
+		self.car = self.world.CreateDynamicBody(position=(self.WORLD_WIDTH/2, self.WORLD_HEIGHT/2))
 		self.car.angularDamping = 0.1
 		self.car_box = self.car.CreatePolygonFixture(box=(2, 1), density=1, friction=0.3)
 
@@ -132,7 +132,7 @@ class GameController(metaclass= Singleton):
 
 	def step(self):
 
-		self.world.Step(self.TIME_STEP, 10, 10)
+		self.world.Step(self.TIME_STEP, 5, 5)
 		self.world.ClearForces()
 
 	def __build_obstacles(self):

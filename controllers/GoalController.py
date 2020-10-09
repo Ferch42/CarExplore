@@ -9,10 +9,10 @@ class GoalController(GameController):
 	def __init__(self, random_GOAL = False):
 
 		super().__init__()
-		self.__GOAL_pos = (30,30)
 		self.__GOAL_found = False
 		self.__GOAL_radius = 1
-		self.__GOAL_diameter = 2*self.__GOAL_radius
+		self.__GOAL_diameter = 4*self.__GOAL_radius
+		self.__GOAL_pos = (int(self.WORLD_WIDTH-self.__GOAL_diameter),int(self.WORLD_HEIGHT-self.__GOAL_diameter))
 		self._obstacles_areas = self._get_obstacles_areas()
 		self.random_GOAL = random_GOAL
 
@@ -118,7 +118,7 @@ class GoalController(GameController):
 
 	def _choose_random_GOAL_points(self):
 
-		x = np.random.randint(self.__GOAL_diameter, self.WORLD_WIDTH+1-self.__GOAL_diameter)	
-		y = np.random.randint(self.__GOAL_diameter, self.WORLD_HEIGHT+1-self.__GOAL_diameter)
+		x = np.random.randint(self.__GOAL_diameter, self.WORLD_WIDTH-self.__GOAL_diameter)	
+		y = np.random.randint(self.__GOAL_diameter, self.WORLD_HEIGHT-self.__GOAL_diameter)
 
 		return x,y
