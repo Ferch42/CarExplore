@@ -9,14 +9,16 @@ class GoalEnvironment(gym.Env):
 
 	metadata = {"render.modes": ['human']}
 
-	def __init__(self, random_GOAL = False, max_timesteps = 500):
+	def __init__(self, random_GOAL = False, max_timesteps = 100):
 
 		self.controller = GoalController(random_GOAL = random_GOAL)
 		self.interface = GoalInterface()
 		self.interface.set_controller(self.controller)
 		self.observation_space_n = 8
 		self.observation_space = gym.spaces.Box(low = np.full(self.observation_space_n, -np.inf), high = np.full(self.observation_space_n, np.inf))
-		self.action_space = gym.spaces.Discrete(5)
+		self.max_acceleration = 10
+		self.max_torque = 10
+		self.action_space = gym.spaces.Box(low = np.array([-self.max_acceleration, -self.max_torque]), high = np.array([self.max_acceleration, self.max_torque]))
 		self.reward = -1
 		self.done = False
 		self.max_timesteps = max_timesteps
@@ -30,7 +32,14 @@ class GoalEnvironment(gym.Env):
 		#car_start_x, car_start_y = starting_position[0], starting_position[1]
 		
 		self.controller.update()
-		self.controller.handle_event(action)
+		#self.controller.handle_event(action)
+		ac, tor = action
+		ac = np.clip(ac, -self.max_acceleration, self.max_acceleration)*50
+		tor = np.clip(tor, -self.max_torque, self.max_torque)*5
+
+		self.controller.apply_acceleration(ac)
+		self.controller.apply_torque(tor)
+
 		self.controller.step()
 		self.done = self.controller.get_GOAL_found() or (self.timestep >= self.max_timesteps)
 		self.timestep+=1

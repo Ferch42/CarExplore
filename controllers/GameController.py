@@ -86,6 +86,14 @@ class GameController(metaclass= Singleton):
 		"""
 		self.terrain.handle_impulse_event(self.car, EventFactory.create(event))
 
+	def apply_acceleration(self, ac):
+
+		self.car.ApplyForce(force= ac*self.car.GetWorldVector(Axis.VERTICAL.value), point=self.car.worldCenter, wake=True)
+
+	def apply_torque(self, tor):
+
+		self.car.ApplyTorque(tor, wake = True)
+
 	def get_default_terrain_color(self):
 		"""
 		Returns the default terrain colour

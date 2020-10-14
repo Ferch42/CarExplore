@@ -8,8 +8,8 @@ from events.CarEvent import CarEvent
 
 class Terrain(ABC):
 
-	_ACCELERATION = 1000
-	_TORQUE = 200
+	_ACCELERATION = 5000
+	_TORQUE = 500
 	COLOR = (255,255,255,255) # White
 	
 	@abstractmethod

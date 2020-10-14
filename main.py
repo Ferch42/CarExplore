@@ -13,6 +13,7 @@ import pickle
 from time import time
 from datetime import timedelta
 from sklearn.preprocessing import StandardScaler
+from prioritized_memory import Memory
 
 
 # Hyperparameters
@@ -25,10 +26,10 @@ update_frequency = 1
 exploration_annealing_frames = 1000000
 gamma = 0.99
 batch_size = 32
-lr = 0.00025
+lr = 0.00001
 C = 10000
 clip_norm = 1
-replay_buffer_size = 1000000
+replay_buffer_size = 100000
 DOUBLE_DQN = True
 load_weights = False
 average_proportion = 0.01
@@ -40,7 +41,8 @@ env = GoalEnvironment(random_GOAL = True)
 #env = gym.make('Acrobot-v1')
 #env = GridGoalEnvironment(n = 10,shuffle_goal = True, discrete_goal = True, stochastic = True, holonomic = False)
 
-replay_buffer = list()
+replay_buffer = Memory(replay_buffer_size)
+#replay_buffer = list()
 timestep = 0
 episode_timestep_history = list()
 reward_history = list()
@@ -49,6 +51,8 @@ exploration_linear_decay = 1/exploration_annealing_frames
 running_reward = 0
 scaler = StandardScaler()
 min_reward = - 1/(1-gamma)
+temporal_diff_mean = 0
+update_count = 0
 
 # Model definition and clonning
 Q_net = Sequential()
@@ -132,7 +136,7 @@ def plot_reward_history():
 	plt.clf()
 
 
-def smooth(l, smooth_interval = 200):
+def smooth(l, smooth_interval = 1000):
 
 	if len(l)==0:
 		return l
@@ -152,9 +156,10 @@ def extract(l, i):
 
 def train():
 
-	global Q_net, Q_target_net, replay_buffer, gamma
+	global Q_net, Q_target_net, replay_buffer, gamma, temporal_diff_mean
 
-	batch = random.sample(replay_buffer, batch_size)
+	#batch = random.sample(replay_buffer, batch_size)
+	batch, idxs, IS_weights = replay_buffer.sample(batch_size)
 
 	states = np.array(extract(batch, 0))
 	actions = np.array(extract(batch,1))
@@ -169,6 +174,7 @@ def train():
 	Q_next = Q_target_net.predict(next_states)
 	Q_target = Q_net.predict(states)
 
+	tds = []
 	if not DOUBLE_DQN:
 
 		for i in range(batch_size):
@@ -178,6 +184,8 @@ def train():
 				target = target + gamma*Q_next[i].max()
 
 			target = np.clip(target, min_reward, 0)
+			td = target - Q_target[i][actions[i]]
+			tds.append(td)
 			Q_target[i][actions[i]] = target
 	
 	else:
@@ -191,22 +199,51 @@ def train():
 				target = target + gamma* Q_next[i][Q_next_2[i].argmax()]
 
 			target = np.clip(target, min_reward, 0)
+			td = target - Q_target[i][actions[i]] 
+			tds.append(td)
 			Q_target[i][actions[i]] = target
 	
 
+	tds = np.abs(tds)
+	temporal_diff_mean = temporal_diff_mean*(1- average_proportion) + average_proportion *tds.mean()
+	
+	Q_net.fit(states, Q_target, verbose = False, sample_weight = np.array(IS_weights))
 
-
-
-	Q_net.fit(states, Q_target, verbose = False)
+	for idx, td in zip(idxs, tds):
+		replay_buffer.update(idx,td)
 
 def add_transition(transition):
 
 	global replay_buffer, replay_buffer_size
 	
-	replay_buffer.append(transition)
+	#replay_buffer.append(transition)
+	replay_buffer.add(transition)
 
-	if len(replay_buffer)>replay_buffer_size:
-		del replay_buffer[:1]
+	#if len(replay_buffer)>replay_buffer_size:
+	#	del replay_buffer[:1]
+
+
+def save():
+
+	last_episodes = np.array(episode_timestep_history[-200:])
+	print('saving')
+	print('STATUS:')
+	print('Episilon: ', e)
+	print('EPISODES COMPLETED: ', i_episode+1)
+	print('timestep: ', timestep)
+	print('Mean number of timesteps: ', last_episodes.mean())
+	print('GOAL REACHED PERCENTAGE: ', np.array([x!=env.max_timesteps for x in last_episodes]).mean())
+	print('Running distance: ', running_reward)
+	print('PER BETA : ', replay_buffer.beta)
+	print('temporal diff running average', temporal_diff_mean)
+	print('TIME ELAPSED: ', timedelta(seconds = time()-t0))
+	print('Q VALUES for the initial state:', Q_net.predict(normalize(np.array([s_start])))[0])
+	print('------------------------------------')
+	plot_reward_history()
+	plot_episode_lenght_history()
+	Q_target_net.set_weights(Q_net.get_weights()) 
+	Q_net.save("DQN.h5")
+	pickle.dump(scaler, open('scaler.pkl', 'wb'))
 
 t0 = time()
 get_reward = get_reward1
@@ -240,29 +277,13 @@ for i_episode in range(episodes):
 		buffer_accumulator.append(experience)
 		s = ss
 		
-		if len(replay_buffer) > batch_size and timestep%update_frequency==0:
+		if timestep > 100000 and timestep%update_frequency==0:
 			#print('training')
 			train()
 
 		if timestep%C ==0:
+			save()
 
-			last_episodes = np.array(episode_timestep_history[-200:])
-			print('saving')
-			print('STATUS:')
-			print('Episilon: ', e)
-			print('EPISODES COMPLETED: ', i_episode+1)
-			print('timestep: ', timestep)
-			print('Mean number of timesteps: ', last_episodes.mean())
-			print('GOAL REACHED PERCENTAGE: ', np.array([x!=env.max_timesteps for x in last_episodes]).mean())
-			print('Running distance: ', running_reward)
-			print('TIME ELAPSED: ', timedelta(seconds = time()-t0))
-			print('Q VALUES for the initial state:', Q_net.predict(np.array([s_start]))[0])
-			print('------------------------------------')
-			plot_reward_history()
-			plot_episode_lenght_history()
-			Q_target_net.set_weights(Q_net.get_weights()) 
-			Q_net.save("DQN.h5")
-			pickle.dump(scaler, open('scaler.pkl', 'wb'))
 
 		timestep += 1
 
@@ -278,9 +299,9 @@ for i_episode in range(episodes):
 				for eg in extra_goals:
 				
 					final_x, final_y = eg
-					for e in buffer_accumulator:
+					for ex in buffer_accumulator:
 
-						s,a,r,ss, done = e
+						s,a,r,ss, done = ex
 						
 						s = s.copy()
 						ss = ss.copy()
@@ -297,10 +318,19 @@ for i_episode in range(episodes):
 						add_transition(new_experience)
 
 
+			"""
+			if i_episode%16 ==0 and timestep >= 10000:
+
+				print('Update count', (update_count%C)/C, end = '\r')
+				for train_step in range(40):
+					train()
+					update_count +=1
+			
+				if update_count%C ==0:
+					save()
+			"""
 
 			episode_timestep_history.append(t)
-			#print(Goal)
-			#print(final_state)
 			dist = np.sqrt((final_state[0] - Goal[0])**2 + (final_state[1] - Goal[1])**2)
 			reward_history.append(dist)
 			running_reward = running_reward* (1-average_proportion) + average_proportion * dist

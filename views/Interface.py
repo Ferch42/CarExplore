@@ -16,7 +16,8 @@ class Interface(metaclass = Singleton):
 		# Pygame setup
 		#self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 		#pygame.display.set_caption('CarExplore')
-		#self.clock = pygame.time.Clock()
+		
+		self.clock = pygame.time.Clock()
 		self.TARGET_FPS = TARGET_FPS
 		# body colours
 		self.colors = {
@@ -44,8 +45,9 @@ class Interface(metaclass = Singleton):
 		"""
 		Flips in pygame
 		"""
+		pygame.event.poll()
 		pygame.display.flip()
-		#self.clock.tick(self.TARGET_FPS)
+		self.clock.tick(self.TARGET_FPS)
 	
 	def _render_background(self):
 		"""
