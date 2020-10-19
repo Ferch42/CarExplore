@@ -14,8 +14,8 @@ class Interface(metaclass = Singleton):
 		# The Controller needs to be set by the ApplicationFactory
 		self.controller = None
 		# Pygame setup
-		#self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-		#pygame.display.set_caption('CarExplore')
+		self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+		pygame.display.set_caption('CarExplore')
 		
 		self.clock = pygame.time.Clock()
 		self.TARGET_FPS = TARGET_FPS

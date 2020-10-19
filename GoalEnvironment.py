@@ -16,8 +16,8 @@ class GoalEnvironment(gym.Env):
 		self.interface.set_controller(self.controller)
 		self.observation_space_n = 8
 		self.observation_space = gym.spaces.Box(low = np.full(self.observation_space_n, -np.inf), high = np.full(self.observation_space_n, np.inf))
-		self.max_acceleration = 10
-		self.max_torque = 10
+		self.max_acceleration = 100
+		self.max_torque = 100
 		self.action_space = gym.spaces.Box(low = np.array([-self.max_acceleration, -self.max_torque]), high = np.array([self.max_acceleration, self.max_torque]))
 		self.reward = -1
 		self.done = False
@@ -41,6 +41,7 @@ class GoalEnvironment(gym.Env):
 		self.controller.apply_torque(tor)
 
 		self.controller.step()
+
 		self.done = self.controller.get_GOAL_found() or (self.timestep >= self.max_timesteps)
 		self.timestep+=1
 		# REWARD CALCULATION 

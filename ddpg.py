@@ -231,9 +231,9 @@ def get_actor():
 	last_init = tf.random_uniform_initializer(minval=-0.003, maxval=0.003)
 
 	inputs = layers.Input(shape=(num_states,))
-	out = layers.Dense(64, activation="relu")(inputs)
-	out = layers.Dense(64, activation="relu")(out)
-	out = layers.Dense(64, activation="relu")(out)
+	out = layers.Dense(400, activation="relu")(inputs)
+	out = layers.Dense(300, activation="relu")(out)
+	#out = layers.Dense(64, activation="relu")(out)
 	outputs = layers.Dense(env.action_space.shape[0], activation="tanh", kernel_initializer=last_init)(out)
 
 	# Our upper bound is 2.0 for Pendulum.
@@ -255,8 +255,8 @@ def get_critic():
 	# Both are passed through seperate layer before concatenating
 	concat = layers.Concatenate()([state_out, action_out])
 
-	out = layers.Dense(64, activation="relu")(concat)
-	out = layers.Dense(64, activation="relu")(out)
+	out = layers.Dense(400, activation="relu")(concat)
+	out = layers.Dense(300, activation="relu")(out)
 	outputs = layers.Dense(1)(out)
 
 	# Outputs single value for give state-action
@@ -271,10 +271,11 @@ exploration.
 """
 
 
-def policy(state, noise_object):
+def policy(state, std):
 	sampled_actions = tf.squeeze(actor_model(state))
 	
-	noise =  noise_object()
+	#noise =  noise_object()
+	noise = np.random.normal(0, std, env.action_space.shape[0])
 	# Adding noise to action
 	sampled_actions = sampled_actions.numpy() + noise
 
@@ -300,9 +301,10 @@ def get_reward(s,a,ss, g, episilon = 1):
 ## Training hyperparameters
 """
 
-std_dev = 1
+std_dev = 70
+std_dev_offset = 5
 
-ou_noise = OUActionNoise(mean=np.zeros(env.action_space.shape[0]), std_deviation=float(std_dev) * np.ones(env.action_space.shape[0]))
+#ou_noise = OUActionNoise(mean=np.zeros(env.action_space.shape[0]), std_deviation=float(std_dev) * np.ones(env.action_space.shape[0]))
 
 actor_model = get_actor()
 critic_model = get_critic()
@@ -317,8 +319,8 @@ print("CRITIC SUMMARY")
 print(critic_model.summary())
 
 
-actor_model.load_weights('actor.h5')
-critic_model.load_weights('critic.h5')
+#actor_model.load_weights('actor.h5')
+#critic_model.load_weights('critic.h5')
 
 
 
@@ -326,10 +328,10 @@ critic_model.load_weights('critic.h5')
 target_actor.set_weights(actor_model.get_weights())
 target_critic.set_weights(critic_model.get_weights())
 
-target_actor.load_weights('target_actor.h5')
-target_critic.load_weights('target_critic.h5')
+#target_actor.load_weights('target_actor.h5')
+#target_critic.load_weights('target_critic.h5')
 
-#print('WEIGHTS LOADED')
+print('WEIGHTS LOADED')
 # Learning rate for actor-critic models
 critic_lr = 0.001
 actor_lr = 0.0001
@@ -347,7 +349,7 @@ tau = 0.05
 buffer = Buffer(1000000, 128)
 scaler = StandardScaler()
 
-scaler = pickle.load(open('scaler.pkl', 'rb'))
+#scaler = pickle.load(open('scaler.pkl', 'rb'))
 
 min_reward = -1/(1-gamma)
 
@@ -388,7 +390,7 @@ for ep in range(total_episodes):
 
 		tf_prev_state = tf.expand_dims(tf.convert_to_tensor(normalized_prev_state), 0)
 
-		action = policy(tf_prev_state, ou_noise)[0]
+		action = policy(tf_prev_state, std_dev+std_dev_offset)[0]
 		#print(action)
 		# Recieve state and reward from environment.
 		state, reward, done, info = env.step(action)
@@ -435,6 +437,7 @@ for ep in range(total_episodes):
 			# RECORDING DISTANCE
 			dist = np.sqrt((state[0] - Goal[0])**2 + (state[1] - Goal[1])**2)
 			dist_list.append(dist)
+			std_dev = 0.9999 * std_dev
 
 			# One cycle of learning
 			if ep% 16 ==0 and buffer.buffer_counter>=100000:
@@ -468,6 +471,7 @@ for ep in range(total_episodes):
 		print("EPOCH =  ", ep//(800))
 		print("Episode * {} * Avg distance to goal is ==> {}".format(ep, avg_dist))
 		print("Episode * {} * Avg Reward is ==> {}".format(ep, avg_reward))
+		print("NOISE std: ", std_dev+std_dev_offset)
 
 	avg_reward_list.append(avg_reward)
 

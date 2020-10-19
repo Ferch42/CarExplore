@@ -31,7 +31,7 @@ class OUActionNoise:
 		else:
 			self.x_prev = np.zeros_like(self.mean)
 
-std_dev = 1
+std_dev = 10
 
 
 ou_noise = OUActionNoise(mean=np.zeros(2), std_deviation=float(std_dev) * np.ones(2))
@@ -43,7 +43,8 @@ for i in range(10000):
 	while(True):
 
 		env.render()
-		a = ou_noise()
+		a = np.random.normal(0,std_dev,2)
+		#a = ou_noise()
 		print(a)
 		ss, r, done, info = env.step(a)	
 
