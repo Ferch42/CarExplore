@@ -301,7 +301,7 @@ def get_reward(s,a,ss, g, episilon = 1):
 ## Training hyperparameters
 """
 
-std_dev = 70
+std_dev = 10
 std_dev_offset = 5
 
 #ou_noise = OUActionNoise(mean=np.zeros(env.action_space.shape[0]), std_deviation=float(std_dev) * np.ones(env.action_space.shape[0]))
@@ -319,8 +319,8 @@ print("CRITIC SUMMARY")
 print(critic_model.summary())
 
 
-#actor_model.load_weights('actor.h5')
-#critic_model.load_weights('critic.h5')
+actor_model.load_weights('actor.h5')
+critic_model.load_weights('critic.h5')
 
 
 
@@ -328,8 +328,8 @@ print(critic_model.summary())
 target_actor.set_weights(actor_model.get_weights())
 target_critic.set_weights(critic_model.get_weights())
 
-#target_actor.load_weights('target_actor.h5')
-#target_critic.load_weights('target_critic.h5')
+target_actor.load_weights('target_actor.h5')
+target_critic.load_weights('target_critic.h5')
 
 print('WEIGHTS LOADED')
 # Learning rate for actor-critic models
@@ -349,7 +349,7 @@ tau = 0.05
 buffer = Buffer(1000000, 128)
 scaler = StandardScaler()
 
-#scaler = pickle.load(open('scaler.pkl', 'rb'))
+scaler = pickle.load(open('scaler.pkl', 'rb'))
 
 min_reward = -1/(1-gamma)
 
