@@ -52,6 +52,7 @@ import random
 from GoalEnvironment import GoalEnvironment
 from sklearn.preprocessing import StandardScaler
 import pickle
+import time
 
 """
 We use [OpenAIGym](http://gym.openai.com/docs) to create the environment.
@@ -302,7 +303,7 @@ def get_reward(s,a,ss, g, episilon = 1):
 """
 
 std_dev = 10
-std_dev_offset = 5
+std_dev_offset = 1
 
 #ou_noise = OUActionNoise(mean=np.zeros(env.action_space.shape[0]), std_deviation=float(std_dev) * np.ones(env.action_space.shape[0]))
 
@@ -384,14 +385,15 @@ for ep in range(total_episodes):
 	while True:
 		# Uncomment this to see the Actor in action
 		# But not in a python notebook.
-		#env.render()
+		env.render()
+		#time.sleep(0.1)
 
 		normalized_prev_state = normalize(prev_state)
 
 		tf_prev_state = tf.expand_dims(tf.convert_to_tensor(normalized_prev_state), 0)
 
 		action = policy(tf_prev_state, std_dev+std_dev_offset)[0]
-		#print(action)
+		print(action)
 		# Recieve state and reward from environment.
 		state, reward, done, info = env.step(action)
 
