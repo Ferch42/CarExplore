@@ -38,7 +38,7 @@ class GoalController(GameController):
 		goal_x, goal_y = self.__GOAL_pos
 		goal_render_pos_x, goal_render_pos_y = self.PPM * goal_x , self.SCREEN_HEIGHT - self.PPM * goal_y
 
-		return {'GOAL_center': (goal_render_pos_x, goal_render_pos_y), 'GOAL_found': self.__GOAL_found, 'GOAL_radius':self.__GOAL_radius*self.PPM}
+		return {'GOAL_center': (int(goal_render_pos_x), int(goal_render_pos_y)), 'GOAL_found': self.__GOAL_found, 'GOAL_radius':self.__GOAL_radius*self.PPM}
 
 	def update(self):
 		"""
@@ -79,7 +79,7 @@ class GoalController(GameController):
 		areas = []
 
 		for o in self.obstacles:
-			min_x, min_y = 0,0
+			min_x, min_y = np.inf,np.inf
 			max_x, max_y = 0,0
 
 			for x,y in o:
@@ -89,7 +89,6 @@ class GoalController(GameController):
 				max_y = max(y, max_y)
 
 			areas.append(Area((min_x-self.__GOAL_radius,min_y-self.__GOAL_radius), (max_x+self.__GOAL_radius,max_y+self.__GOAL_radius)))
-
 		return areas
 
 	def _valid_GOAL_point(self, point):
@@ -118,7 +117,7 @@ class GoalController(GameController):
 
 	def _choose_random_GOAL_points(self):
 
-		x = np.random.randint(self.__GOAL_diameter, self.WORLD_WIDTH-self.__GOAL_diameter)	
-		y = np.random.randint(self.__GOAL_diameter, self.WORLD_HEIGHT-self.__GOAL_diameter)
+		x = np.random.uniform(self.__GOAL_diameter, self.WORLD_WIDTH-self.__GOAL_diameter)	
+		y = np.random.uniform(self.__GOAL_diameter, self.WORLD_HEIGHT-self.__GOAL_diameter)
 
 		return x,y

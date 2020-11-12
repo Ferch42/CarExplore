@@ -320,8 +320,8 @@ print("CRITIC SUMMARY")
 print(critic_model.summary())
 
 
-#actor_model.load_weights('actor.h5')
-#critic_model.load_weights('critic.h5')
+actor_model.load_weights('actor.h5')
+critic_model.load_weights('critic.h5')
 
 
 
@@ -329,10 +329,10 @@ print(critic_model.summary())
 target_actor.set_weights(actor_model.get_weights())
 target_critic.set_weights(critic_model.get_weights())
 
-#target_actor.load_weights('target_actor.h5')
-#target_critic.load_weights('target_critic.h5')
+target_actor.load_weights('target_actor.h5')
+target_critic.load_weights('target_critic.h5')
 
-#print('WEIGHTS LOADED')
+print('WEIGHTS LOADED')
 # Learning rate for actor-critic models
 critic_lr = 0.001
 actor_lr = 0.0001
@@ -439,7 +439,7 @@ for ep in range(total_episodes):
 			# RECORDING DISTANCE
 			dist = np.sqrt((state[0] - Goal[0])**2 + (state[1] - Goal[1])**2)
 			dist_list.append(dist)
-			std_dev = 0.99997 * std_dev
+			std_dev = 0.99999 * std_dev
 
 			# One cycle of learning
 			if ep% 16 ==0 and buffer.buffer_counter>=100000:

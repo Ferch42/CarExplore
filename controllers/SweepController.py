@@ -71,3 +71,9 @@ class SweepController(GameController):
 				squares.append({"RECT": (x_coord, y_coord,square_lenght, square_lenght), "OCCUPANCY": occupation_grid[x][y]})
 
 		return squares
+
+
+	def reset():
+
+		self._reset_car()
+		self.grid = np.full((int(self.WORLD_WIDTH/self.grid_size), int(self.WORLD_HEIGHT/self.grid_size)), False, dtype = bool)
