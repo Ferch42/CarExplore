@@ -44,26 +44,7 @@ class GoalEnvironment(gym.Env):
 
 		self.done = self.controller.get_GOAL_found() or (self.timestep >= self.max_timesteps)
 		self.timestep+=1
-		# REWARD CALCULATION 
-		# The reward is the cosine of the angle between the inital distance vector from the car to the goal
-		# and the distance vector that the car traveled
-
-		#finishing_position = self.controller.get_car_state()
-		#car_finish_x, car_finish_y = finishing_position[0], finishing_position[1]
-
-		#u_x, u_y = car_finish_x - car_start_x, car_finish_y - car_start_y
-
-		#traveled_distance = np.sqrt(u_x**2 + u_y**2)
-
-		#GOAL_x, GOAL_y = self.controller.get_GOAL_pos()
-
-		#v_x , v_y = GOAL_x - car_start_x, GOAL_y - car_start_y
-
-		#cosine = (u_x* v_x + u_y *v_y)/ (np.sqrt(u_x**2 + u_y**2) * np.sqrt(v_x**2 + v_y**2))
-
-		#r = np.nan_to_num(cosine)* traveled_distance 
-		#r = r - 0.1 if not self.controller.get_GOAL_found() else 100
-		#print(r)
+		
 		return self._get_observation(), self.reward, self.done , {}
 
 	def reset(self):
