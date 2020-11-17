@@ -25,7 +25,7 @@ class GameController(metaclass= Singleton):
 		self.world = World().get_world()
 
 		self.__initialize_game_borders()
-		self._initialize_car()
+		self._initialize_car((self.WORLD_WIDTH/2,self.WORLD_HEIGHT/2))
 
 		self.areas = deserialize_areas()
 		self.obstacles = deserialize_obstacles()
@@ -57,12 +57,12 @@ class GameController(metaclass= Singleton):
 		right_wall = self.world.CreateStaticBody(position = (horizontal_width,0), shapes = polygonShape(box= (1,vertical_height)))
 
 
-	def _initialize_car(self):
+	def _initialize_car(self, car_pos):
 		"""
 		Initializes the car
 		"""
 
-		self.car = self.world.CreateDynamicBody(position=(self.WORLD_WIDTH/2, self.WORLD_HEIGHT/2))
+		self.car = self.world.CreateDynamicBody(position=(car_pos[0], car_pos[1]))
 		self.car.angularDamping = 0.1
 		self.car_box = self.car.CreatePolygonFixture(box=(2, 1), density=1, friction=0.3)
 
@@ -161,9 +161,9 @@ class GameController(metaclass= Singleton):
 
 		return [x, y, angle, vel_x, vel_y, ang_vel]
 
-	def _reset_car(self):
+	def _reset_car(self, car_pos):
 		"""
 		Resets car
 		"""
 		self.world.DestroyBody(self.car)
-		self._initialize_car()
+		self._initialize_car(car_pos)

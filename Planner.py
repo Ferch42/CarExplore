@@ -5,13 +5,14 @@ import tensorflow as tf
 class Planner:
 
 
-	def __init__(self, world_x, world_y, grid_size, actor, critic):
+	def __init__(self, world_x, world_y, grid_size, actor, critic, scaler):
 
 		self.world_x = world_x
 		self.world_y = world_y
 		self.grid_size = grid_size
 		self.actor = actor
 		self.critic = critic
+		self.scaler = scaler
 		self.grid = np.full((int(self.world_x/self.grid_size), int(self.world_y/self.grid_size)), False, dtype = bool)
 
 
@@ -25,17 +26,23 @@ class Planner:
 		critic_values = []
 
 		for o in options:
-			S = tf.expand_dims(tf.convert_to_tensor(s+o), 0)
+			normalized_state = self.scaler.transform([s+o])[0]
+			S = tf.expand_dims(tf.convert_to_tensor(normalized_state), 0)
 			action = self.actor(S)
-			actions.append(tf.squeeze(action))
-			critic_values.append(self.critic(S, action))
+			cv = self.critic([S, action]).numpy()
+			#print(cv[0][0])
+			critic_values.append(cv[0][0])
+			#print(action.numpy()[0])
+			actions.append(action.numpy()[0])
 
 
+		#print("CV: ", critic_values)
+		#print("Actions: ", actions)
 		return actions[np.argmax(critic_values)]
 
 
 
-	def update_internal_state(self,state);
+	def update_internal_state(self,state):
 
 		x, y = int(state[0]/self.grid_size), int(state[1]/self.grid_size)
 		self.grid[x][y] = True

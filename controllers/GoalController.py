@@ -66,7 +66,8 @@ class GoalController(GameController):
 		"""
 		Resets environment
 		"""
-		self._reset_car()
+		car_pos = self._choose_random_GOAL_points()
+		self._reset_car(car_pos)
 		self.__GOAL_found = False
 		if self.random_GOAL:
 			self._reset_GOAL()

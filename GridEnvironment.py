@@ -9,7 +9,7 @@ class GridEnvironment(gym.Env):
 
 	metadata = {"render.modes": ['human']}
 
-	def __init__(self, random_GOAL = False, max_timesteps = 10000):
+	def __init__(self, max_timesteps = 1000):
 
 		self.controller = SweepController()
 		self.interface = SweepInterface()
@@ -41,7 +41,7 @@ class GridEnvironment(gym.Env):
 
 		self.controller.step()
 
-		self.done = self.controller.get_GOAL_found() or (self.timestep >= self.max_timesteps)
+		self.done = self.controller.get_grid_done() or (self.timestep >= self.max_timesteps)
 		self.timestep+=1
 	
 		return self._get_observation(), self.reward, self.done , {}

@@ -350,7 +350,7 @@ tau = 0.05
 buffer = Buffer(1000000, 128)
 scaler = StandardScaler()
 
-#scaler = pickle.load(open('scaler.pkl', 'rb'))
+scaler = pickle.load(open('scaler.pkl', 'rb'))
 
 min_reward = -1/(1-gamma)
 
@@ -439,7 +439,7 @@ for ep in range(total_episodes):
 			# RECORDING DISTANCE
 			dist = np.sqrt((state[0] - Goal[0])**2 + (state[1] - Goal[1])**2)
 			dist_list.append(dist)
-			std_dev = 0.99999 * std_dev
+			std_dev = 0.99997 * std_dev
 
 			# One cycle of learning
 			if ep% 16 ==0 and buffer.buffer_counter>=100000:

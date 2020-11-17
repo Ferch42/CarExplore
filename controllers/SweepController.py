@@ -73,7 +73,19 @@ class SweepController(GameController):
 		return squares
 
 
-	def reset():
+	def reset(self):
 
-		self._reset_car()
+		self._reset_car((self.WORLD_WIDTH/2,self.WORLD_HEIGHT/2))
 		self.grid = np.full((int(self.WORLD_WIDTH/self.grid_size), int(self.WORLD_HEIGHT/self.grid_size)), False, dtype = bool)
+
+
+	def get_grid_done(self):
+
+		X,Y = self.grid.shape
+
+		for i in range(X):
+			for j in range(Y):
+				if(not self.grid[i][j]):
+					return False
+
+		return True

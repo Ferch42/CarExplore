@@ -350,7 +350,7 @@ tau = 0.05
 buffer = Buffer(1000000, 128)
 scaler = StandardScaler()
 
-#scaler = pickle.load(open('scaler.pkl', 'rb'))
+scaler = pickle.load(open('scaler.pkl', 'rb'))
 
 min_reward = -1/(1-gamma)
 

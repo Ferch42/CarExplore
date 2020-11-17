@@ -1,52 +1,111 @@
-from GoalEnvironment import GoalEnvironment
 import numpy as np
+import gym
+import tensorflow as tf
+from tensorflow.keras import layers
+import numpy as np
+import matplotlib.pyplot as plt
+import random
+from GridEnvironment import GridEnvironment
+from sklearn.preprocessing import StandardScaler
+from Planner import Planner
+import pickle
+import time
+from tqdm import tqdm
 
-env = GoalEnvironment(True)
+env = GridEnvironment()
+num_states = env.observation_space.shape[0] +2
+num_actions = env.action_space.shape[0]
+
+def get_actor():
+	# Initialize weights between -3e-3 and 3-e3
+	last_init = tf.random_uniform_initializer(minval=-0.003, maxval=0.003)
+
+	inputs = layers.Input(shape=(num_states,))
+	out = layers.Dense(400, activation="relu")(inputs)
+	out = layers.Dense(300, activation="relu")(out)
+	#out = layers.Dense(64, activation="relu")(out)
+	outputs = layers.Dense(env.action_space.shape[0], activation="tanh", kernel_initializer=last_init)(out)
+
+	# Our upper bound is 2.0 for Pendulum.
+	outputs = outputs * tf.convert_to_tensor(env.action_space.high)
+	model = tf.keras.Model(inputs, outputs)
+	return model
 
 
-class OUActionNoise:
-	def __init__(self, mean, std_deviation, theta=0.15, dt=1e-2, x_initial=None):
-		self.theta = theta
-		self.mean = mean
-		self.std_dev = std_deviation
-		self.dt = dt
-		self.x_initial = x_initial
-		self.reset()
+def get_critic():
+	# State as input
+	state_input = layers.Input(shape=(num_states))
+	state_out = layers.Dense(32, activation="relu")(state_input)
+	#state_out = layers.Dense(32, activation="relu")(state_out)
 
-	def __call__(self):
-		# Formula taken from https://www.wikipedia.org/wiki/Ornstein-Uhlenbeck_process.
-		x = (
-			self.x_prev
-			+ self.theta * (self.mean - self.x_prev) * self.dt
-			+ self.std_dev * np.sqrt(self.dt) * np.random.normal(size=self.mean.shape)
-		)
-		# Store x into x_prev
-		# Makes next noise dependent on current one
-		self.x_prev = x
-		return x
+	# Action as input
+	action_input = layers.Input(shape=(num_actions))
+	action_out = layers.Dense(32, activation="relu")(action_input)
 
-	def reset(self):
-		if self.x_initial is not None:
-			self.x_prev = self.x_initial
-		else:
-			self.x_prev = np.zeros_like(self.mean)
+	# Both are passed through seperate layer before concatenating
+	concat = layers.Concatenate()([state_out, action_out])
 
-std_dev = 10
+	out = layers.Dense(400, activation="relu")(concat)
+	out = layers.Dense(300, activation="relu")(out)
+	outputs = layers.Dense(1)(out)
+
+	# Outputs single value for give state-action
+	model = tf.keras.Model([state_input, action_input], outputs)
+
+	return model
 
 
-ou_noise = OUActionNoise(mean=np.zeros(2), std_deviation=float(std_dev) * np.ones(2))
+actor_model = get_actor()
+critic_model = get_critic()
+
+target_actor = get_actor()
+target_critic = get_critic()
+
+print("ACTOR SUMMARY")
+print(actor_model.summary())
+
+print("CRITIC SUMMARY")
+print(critic_model.summary())
+
+
+actor_model.load_weights('actor.h5')
+critic_model.load_weights('critic.h5')
+
+target_actor.load_weights('target_actor.h5')
+target_critic.load_weights('target_critic.h5')
+
+scaler = pickle.load(open('scaler.pkl', 'rb'))
+p = Planner(env.controller.WORLD_WIDTH, env.controller.WORLD_HEIGHT, env.controller.grid_size, actor_model, critic_model,scaler)
+
+timesteps_hist = []
 
 for i in range(10000):
 	
-	env.reset()
+	s = env.reset()
 	print(i)
+	timestep = 0
+	stuck = False
 	while(True):
 
 		env.render()
-		a = np.random.normal(0,std_dev,2)
+		#a = np.random.uniform(-100,100,2)
 		#a = ou_noise()
-		print(a)
-		ss, r, done, info = env.step(a)	
+		#print(a)
+		#print("State: ",s)
+		a = p.get_action(s)
+		a = np.array(a)
+		x, y = s[0],s[1]
+		if(stuck):
+			print('stuck')
+			a = np.random.uniform(-100,100,2)
 
+		ss, r, done, info = env.step(a)	
+		timestep +=1
+		#print("Next state: ", ss)
+		x_new ,y_new = ss[0],ss[1]
+		stuck = np.sqrt((x-x_new)**2 + (y-y_new)**2)<1e-1
+		s = ss
 		if done:
-			break
+			timesteps_hist.append(timestep)
+
+pickle.dump(timesteps_hist, open('Planner_hist.pkl', 'wb'))
