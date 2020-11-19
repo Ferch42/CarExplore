@@ -16,8 +16,8 @@ class GridEnvironment(gym.Env):
 		self.interface.set_controller(self.controller)
 		self.observation_space_n = 6
 		self.observation_space = gym.spaces.Box(low = np.full(self.observation_space_n, -np.inf), high = np.full(self.observation_space_n, np.inf))
-		self.max_acceleration = 100
-		self.max_torque = 100
+		self.max_acceleration = 500
+		self.max_torque = 500
 		self.action_space = gym.spaces.Box(low = np.array([-self.max_acceleration, -self.max_torque]), high = np.array([self.max_acceleration, self.max_torque]))
 		self.reward = -1
 		self.done = False

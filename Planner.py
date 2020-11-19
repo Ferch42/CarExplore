@@ -14,7 +14,8 @@ class Planner:
 		self.critic = critic
 		self.scaler = scaler
 		self.grid = np.full((int(self.world_x/self.grid_size), int(self.world_y/self.grid_size)), False, dtype = bool)
-
+		self.objective = [0,0]
+		self.step_count = 0
 
 	def get_action(self,state):
 
@@ -40,6 +41,21 @@ class Planner:
 		#print("Actions: ", actions)
 		return actions[np.argmax(critic_values)]
 
+
+	def get_new_objective(self, state):
+
+		options = self.get_options()
+		critic_values = []
+
+		for o in options:
+			normalized_state = self.scaler.transform([s+o])[0]
+			S = tf.expand_dims(tf.convert_to_tensor(normalized_state), 0)
+			action = self.actor(S)
+			cv = self.critic([S, action]).numpy()
+			#print(cv[0][0])
+			critic_values.append(cv[0][0])
+			#print(action.numpy()[0])
+			actions.append(action.numpy()[0])
 
 
 	def update_internal_state(self,state):

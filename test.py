@@ -85,6 +85,8 @@ for i in range(10000):
 	print(i)
 	timestep = 0
 	stuck = False
+	stuck_count = 0
+	random_policy = 0
 	while(True):
 
 		env.render()
@@ -94,16 +96,28 @@ for i in range(10000):
 		#print("State: ",s)
 		a = p.get_action(s)
 		a = np.array(a)
-		x, y = s[0],s[1]
-		if(stuck):
-			print('stuck')
-			a = np.random.uniform(-100,100,2)
+		a = a + np.random.normal(0,10,2)
 
+		x, y = s[0],s[1]
+
+		if(stuck_count>= 5 and random_policy <=20):
+			print('stuck', timestep)
+			a = np.random.uniform(-100,100,2)
+			random_policy +=1
+		
+		if random_policy==21:
+			random_policy = 0
+		
 		ss, r, done, info = env.step(a)	
 		timestep +=1
 		#print("Next state: ", ss)
 		x_new ,y_new = ss[0],ss[1]
-		stuck = np.sqrt((x-x_new)**2 + (y-y_new)**2)<1e-1
+
+		if(np.sqrt((x-x_new)**2 + (y-y_new)**2)<2e-1):
+			stuck_count+=1
+		else:
+			stuck_count = 0
+
 		s = ss
 		if done:
 			timesteps_hist.append(timestep)

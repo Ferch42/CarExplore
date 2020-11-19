@@ -34,7 +34,7 @@ class GoalEnvironment(gym.Env):
 		self.controller.update()
 		#self.controller.handle_event(action)
 		ac, tor = action
-		ac = np.clip(ac, -self.max_acceleration, self.max_acceleration)*50
+		ac = np.clip(ac, -self.max_acceleration, self.max_acceleration)*100
 		tor = np.clip(tor, -self.max_torque, self.max_torque)*5
 
 		self.controller.apply_acceleration(ac)
