@@ -75,21 +75,20 @@ target_actor.load_weights('target_actor.h5')
 target_critic.load_weights('target_critic.h5')
 
 scaler = pickle.load(open('scaler.pkl', 'rb'))
-p = Planner(env.controller.WORLD_WIDTH, env.controller.WORLD_HEIGHT, env.controller.grid_size, actor_model, critic_model,scaler)
 
-timesteps_hist = []
+timesteps_hist = pickle.load(open('Planner_hist.pkl', 'rb'))
+sweep_percentage = []
 
-for i in range(10000):
+for i in range(200):
 	
 	s = env.reset()
+	p = Planner(env.controller.WORLD_WIDTH, env.controller.WORLD_HEIGHT, env.controller.grid_size, actor_model, critic_model,scaler)
 	print(i)
 	timestep = 0
-	stuck = False
-	stuck_count = 0
-	random_policy = 0
+
 	while(True):
 
-		env.render()
+		#env.render()
 		#a = np.random.uniform(-100,100,2)
 		#a = ou_noise()
 		#print(a)
@@ -97,29 +96,17 @@ for i in range(10000):
 		a = p.get_action(s)
 		a = np.array(a)
 		a = a + np.random.normal(0,10,2)
-
-		x, y = s[0],s[1]
-
-		if(stuck_count>= 5 and random_policy <=20):
-			print('stuck', timestep)
-			a = np.random.uniform(-100,100,2)
-			random_policy +=1
-		
-		if random_policy==21:
-			random_policy = 0
-		
 		ss, r, done, info = env.step(a)	
 		timestep +=1
-		#print("Next state: ", ss)
-		x_new ,y_new = ss[0],ss[1]
-
-		if(np.sqrt((x-x_new)**2 + (y-y_new)**2)<2e-1):
-			stuck_count+=1
-		else:
-			stuck_count = 0
 
 		s = ss
 		if done:
+			print("Done in :", timestep)
+			sp  = p.get_goal_sweep_percentage()
+			print("Sweep percentage: ", sp)
+			sweep_percentage.append(sp)
 			timesteps_hist.append(timestep)
+			break
 
 pickle.dump(timesteps_hist, open('Planner_hist.pkl', 'wb'))
+pickle.dump(sweep_percentage, open('sweep_percentage.pkl', 'wb'))

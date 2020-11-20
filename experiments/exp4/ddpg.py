@@ -232,8 +232,8 @@ def get_actor():
 	last_init = tf.random_uniform_initializer(minval=-0.003, maxval=0.003)
 
 	inputs = layers.Input(shape=(num_states,))
-	out = layers.Dense(64, activation="relu")(inputs)
-	out = layers.Dense(64, activation="relu")(out)
+	out = layers.Dense(400, activation="relu")(inputs)
+	out = layers.Dense(300, activation="relu")(out)
 	#out = layers.Dense(64, activation="relu")(out)
 	outputs = layers.Dense(env.action_space.shape[0], activation="tanh", kernel_initializer=last_init)(out)
 
@@ -256,8 +256,8 @@ def get_critic():
 	# Both are passed through seperate layer before concatenating
 	concat = layers.Concatenate()([state_out, action_out])
 
-	out = layers.Dense(64, activation="relu")(concat)
-	out = layers.Dense(64, activation="relu")(out)
+	out = layers.Dense(400, activation="relu")(concat)
+	out = layers.Dense(300, activation="relu")(out)
 	outputs = layers.Dense(1)(out)
 
 	# Outputs single value for give state-action

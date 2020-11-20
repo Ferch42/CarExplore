@@ -22,27 +22,20 @@ class Planner:
 		s = list(state)
 		self.update_internal_state(state)
 
-		options = self.get_options()
-		actions  = []
-		critic_values = []
+		if self.step_count%10==0:
 
-		for o in options:
-			normalized_state = self.scaler.transform([s+o])[0]
-			S = tf.expand_dims(tf.convert_to_tensor(normalized_state), 0)
-			action = self.actor(S)
-			cv = self.critic([S, action]).numpy()
-			#print(cv[0][0])
-			critic_values.append(cv[0][0])
-			#print(action.numpy()[0])
-			actions.append(action.numpy()[0])
+			self.objective = self.get_new_objective(s)
+
+		self.step_count+=1
+
+		normalized_state = self.scaler.transform([s+self.objective])[0]
+		S = tf.expand_dims(tf.convert_to_tensor(normalized_state), 0)
+		action = self.actor(S)
+
+		return action.numpy()[0]
 
 
-		#print("CV: ", critic_values)
-		#print("Actions: ", actions)
-		return actions[np.argmax(critic_values)]
-
-
-	def get_new_objective(self, state):
+	def get_new_objective(self, s):
 
 		options = self.get_options()
 		critic_values = []
@@ -55,7 +48,11 @@ class Planner:
 			#print(cv[0][0])
 			critic_values.append(cv[0][0])
 			#print(action.numpy()[0])
-			actions.append(action.numpy()[0])
+		
+		if len(options)>0:
+			return options[np.argmax(critic_values)]
+		else:
+			return [0,0]
 
 
 	def update_internal_state(self,state):
@@ -74,3 +71,7 @@ class Planner:
 					options.append([w*self.grid_size + self.grid_size/2, l*self.grid_size + self.grid_size/2])
 
 		return options
+
+	def get_goal_sweep_percentage(self):
+
+		return self.grid.mean()
