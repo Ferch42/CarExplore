@@ -9,7 +9,7 @@ class GoalEnvironment(gym.Env):
 
 	metadata = {"render.modes": ['human']}
 
-	def __init__(self, random_GOAL = False, max_timesteps = 100):
+	def __init__(self, random_GOAL = False, max_timesteps = 200):
 
 		self.controller = GoalController(random_GOAL = random_GOAL)
 		self.interface = GoalInterface()
