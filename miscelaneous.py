@@ -22,7 +22,7 @@ def plot(l, title, y_axis_name):
 	plt.show()
 
 plot(smooth(ep_reward), "Recompensa média acumulada", 'recompensa')
-plot(smooth(dis_list), "Distância média", 'distância')
+plot(smooth(dist_list), "Distância média", 'distância')
 
 goal_achieved = [x!=-101 for x in ep_reward]
 plot(smooth(goal_achieved), "Média de conclusão", 'porcentagem')

@@ -76,13 +76,13 @@ target_critic.load_weights('target_critic.h5')
 
 scaler = pickle.load(open('scaler.pkl', 'rb'))
 
-timesteps_hist = pickle.load(open('Planner_hist.pkl', 'rb'))
+timesteps_hist = []
 sweep_percentage = []
 
-for i in range(200):
+for i in range(1000):
 	
 	s = env.reset()
-	p = Planner(env.controller.WORLD_WIDTH, env.controller.WORLD_HEIGHT, env.controller.grid_size, actor_model, critic_model,scaler)
+	#p = Planner(env.controller.WORLD_WIDTH, env.controller.WORLD_HEIGHT, env.controller.grid_size, actor_model, critic_model,scaler)
 	print(i)
 	timestep = 0
 
@@ -93,20 +93,20 @@ for i in range(200):
 		#a = ou_noise()
 		#print(a)
 		#print("State: ",s)
-		a = p.get_action(s)
-		a = np.array(a)
-		a = a + np.random.normal(0,10,2)
+		#a = p.get_action(s)
+		#a = np.array(a)
+		a = np.random.uniform(-100,100,2)
 		ss, r, done, info = env.step(a)	
 		timestep +=1
 
 		s = ss
 		if done:
 			print("Done in :", timestep)
-			sp  = p.get_goal_sweep_percentage()
+			sp  = env.controller.grid.mean()
 			print("Sweep percentage: ", sp)
 			sweep_percentage.append(sp)
 			timesteps_hist.append(timestep)
 			break
 
-pickle.dump(timesteps_hist, open('Planner_hist.pkl', 'wb'))
-pickle.dump(sweep_percentage, open('sweep_percentage.pkl', 'wb'))
+pickle.dump(timesteps_hist, open('RANDOM_hist.pkl', 'wb'))
+pickle.dump(sweep_percentage, open('RANDOM_sweep_percentage.pkl', 'wb'))
