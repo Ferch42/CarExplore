@@ -1,5 +1,5 @@
 # CarExplore
-A environment for training agents that perform complete sweep exploration while learning to move at the same time
+An environment for training agents that perform complete sweep exploration while learning to move at the same time
 
 To run the environment just import the environment files:
 
