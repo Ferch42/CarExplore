@@ -18,4 +18,6 @@ The GridEnvironment is the environment used for validation of the complete explo
 
 The GoalEnvironment may be used for training. 
 
+In order to configure obstacles just add json files to the obstacles folder.
+
 For more information please refer to https://drive.google.com/file/d/1oXPZzeguVCWX0lIh9jegFPW9GlIUnVIz/view?usp=sharing
