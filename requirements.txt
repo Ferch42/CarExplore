@@ -1,5 +1,5 @@
 Box2D==2.3.10
-certifi==2020.6.20
+certifi==2022.12.7
 numpy==1.19.1
 pygame==1.9.6
 wincertstore==0.2
